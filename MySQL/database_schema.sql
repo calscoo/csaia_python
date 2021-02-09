@@ -13,8 +13,13 @@ CREATE TABLE `flights` (
 	`address` VARCHAR(255) NOT NULL,
 	`field_name` VARCHAR(100),
 	`crop_name` VARCHAR(100),
+	`average_latitude` DECIMAL(14, 10) NOT NULL,
+	`average_longitude` DECIMAL(14, 10) NOT NULL,
+	`average_altitude` DECIMAL(10, 4) NOT NULL,
 	`flight_start_time` DATETIME NOT NULL,
 	`flight_end_time` DATETIME NOT NULL,
+	`hardware_make` VARCHAR(100),
+	`hardware_model` VARCHAR(100),
 	PRIMARY KEY (`id`),
     FOREIGN KEY (`user_id`) REFERENCES users(`id`)
 );
