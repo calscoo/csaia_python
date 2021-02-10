@@ -1,11 +1,12 @@
-CREATE TABLE `users` (
+CREATE DATABASE `csaia_database`;
+CREATE TABLE `csaia_database`.`users` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT,
 	`email` VARCHAR(100) NOT NULL,
 	`password` VARCHAR(255) NOT NULL,
 	`role` TINYINT NOT NULL,
 	PRIMARY KEY (`id`)
 );
-CREATE TABLE `flights` (
+CREATE TABLE `csaia_database`.`flights` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT,
 	`user_id` BIGINT,
 	`flight_name` VARCHAR(100) NOT NULL,
@@ -23,7 +24,7 @@ CREATE TABLE `flights` (
 	PRIMARY KEY (`id`),
     FOREIGN KEY (`user_id`) REFERENCES users(`id`)
 );
-CREATE TABLE `images` (
+CREATE TABLE `csaia_database`.`images` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT,
 	`flight_id` BIGINT,
 	`directory_location` TEXT NOT NULL,
@@ -39,9 +40,7 @@ CREATE TABLE `images` (
 	`iso_speed` INT,
 	`metering_mode` VARCHAR(50),
 	`focal_length` VARCHAR(50),
-	`exposure_bias_value` SMALLINT,
 	`light_source` VARCHAR(50),
-	`focal_length_35mm` SMALLINT,
 	`exposure_mode` VARCHAR(50),
 	`white_balance` VARCHAR(50),
 	`gain_control` VARCHAR(50),
