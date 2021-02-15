@@ -10,35 +10,65 @@ INSERT INTO images(flight_id, directory_location, image_extension, datetime, lat
 longitude, altitude, image_width, image_height, exposure_time, 
 f_number, iso_speed, metering_mode, focal_length, light_source, 
 exposure_mode, white_balance, gain_control, contrast, saturation, 
-sharpness, image_compression, bits_per_sample, exif_version, software_version, 
+sharpness, image_compression, exif_version, software_version, 
 hardware_make, hardware_model, hardware_serial_number)
-VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 """
+
+
+def none_check_str(val):
+    return None if val is None else str(val)
+
+
+def none_check_float(val):
+    return None if val is None else float(val)
+
+
+def none_check_int(val):
+    return None if val is None else int(str(val))
+
 image_records = []
-for root, subdirs, files in os.walk('Z:\\Pics\\2021'):
+for root, subdirs, files in os.walk('C:\\Users\\Caleb\\Downloads\\CCAST_CSAIA2'):
     oneImage = False
     for file in files:
         ext = os.path.splitext(file)[1].lower()
         if ext in ('.jpg', '.jpeg', '.tif', '.tiff'):
             imgPath = os.path.join(root, file)
-            f = open(imgPath, 'rb')
-            tags = exifread.process_file(f)
+            tags = exifread.process_file(open(imgPath, 'rb'))
             gpsData = gpsphoto.getGPSData(imgPath)
-            #TODO change dict calls to .get to avoid KeyErrors
-            if ext in ('.jpg', '.jpeg'):
-                image_records.insert(0, (None, str(imgPath), str(ext), str(tags['Image DateTime']), float(gpsData['Latitude']),
-                                         float(gpsData['Longitude']), float(gpsData['Altitude']), int(str(tags['EXIF ExifImageWidth'])), int(str(tags['EXIF ExifImageLength'])), str(tags['EXIF ExposureTime']),
-                                         str(tags['EXIF FNumber']), int(str(tags['EXIF ISOSpeedRatings'])), str(tags['EXIF MeteringMode']), str(tags['EXIF LightSource']), str(tags['EXIF FocalLength']),
-                                         str(tags['EXIF ExposureMode']), str(tags['EXIF WhiteBalance']), str(tags['EXIF GainControl']), str(tags['EXIF Contrast']), str(tags['EXIF Saturation']),
-                                         str(tags['EXIF Sharpness']), None, None, str(tags['EXIF ExifVersion']), str(tags['Image Software']),
-                                         str(tags['Image Make']), str(tags['Image Model']), str(tags['EXIF BodySerialNumber'])))
-            else:
-                image_records.insert(0, (None, str(imgPath), str(ext), str(tags['Image DateTime']), float(gpsData['Latitude']),
-                                         float(gpsData['Longitude']), float(gpsData['Altitude']), int(str(tags['Image ImageWidth'])), int(str(tags['Image ImageLength'])), str(tags['EXIF ExposureTime']),
-                                         str(tags['EXIF FNumber']), int(str(tags['EXIF ISOSpeed'])), str(tags['EXIF MeteringMode']), None, str(tags['EXIF FocalLength']),
-                                         str(tags['EXIF ExposureProgram']), None, None, None, None,
-                                         None,  str(tags['Image Compression']), int(str(tags['Image BitsPerSample'])), str(tags['EXIF ExifVersion']), str(tags['Image Software']),
-                                         str(tags['Image Make']), str(tags['Image Model']), str(tags['EXIF BodySerialNumber'])))
+
+            Latitude = none_check_float(gpsData.get('Latitude'))
+            Longitude = none_check_float(gpsData.get('Longitude'))
+            Altitude = none_check_float(gpsData.get('Altitude'))
+            DateTime = none_check_str(tags.get('Image DateTime'))
+            ExposureTime = none_check_str(tags.get('EXIF ExposureTime'))
+            FNumber = none_check_str(tags.get('EXIF FNumber'))
+            MeteringMode = none_check_str(tags.get('EXIF MeteringMode'))
+            FocalLength = none_check_str(tags.get('EXIF FocalLength'))
+            ExifVersion = none_check_str(tags.get('EXIF ExifVersion'))
+            Software = none_check_str(tags.get('Image Software'))
+            Make = none_check_str(tags.get('Image Make'))
+            Model = none_check_str(tags.get('Image Model'))
+            BodySerialNumber = none_check_str(tags.get('EXIF BodySerialNumber'))
+            LightSource = none_check_str(tags.get('EXIF LightSource'))
+            WhiteBalance = none_check_str(tags.get('EXIF WhiteBalance'))
+            GainControl = none_check_str(tags.get('EXIF GainControl'))
+            Contrast = none_check_str(tags.get('EXIF Contrast'))
+            Saturation = none_check_str(tags.get('EXIF Saturation'))
+            Sharpness = none_check_str(tags.get('EXIF Sharpness'))
+            Compression = none_check_str(tags.get('Image Compression'))
+
+            ImageWidth = none_check_int(tags.get('Image ImageWidth')) or none_check_int(tags.get('EXIF ExifImageWidth'))
+            ImageLength = none_check_int(tags.get('Image ImageLength')) or none_check_int(tags.get('EXIF ExifImageLength'))
+            ISOSpeed = none_check_int(tags.get('EXIF ISOSpeed')) or none_check_int(tags.get('EXIF ISOSpeedRatings'))
+            ExposureProgram = none_check_str(tags.get('EXIF ExposureProgram')) or none_check_str(tags.get('EXIF ExposureMode'))
+
+            image_records.insert(0, (None, str(imgPath), str(ext), DateTime, Latitude,
+                                     Longitude, Altitude, ImageWidth, ImageLength, ExposureTime,
+                                     FNumber, ISOSpeed, MeteringMode, LightSource, FocalLength,
+                                     ExposureProgram, WhiteBalance, GainControl, Contrast, Saturation,
+                                     Sharpness, Compression, ExifVersion, Software,
+                                     Make, Model, BodySerialNumber))
 
 try:
     with connect(
