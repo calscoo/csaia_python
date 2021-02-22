@@ -1,3 +1,4 @@
+-- This schema represents our current db model and allows for ease of setup on new machines.
 CREATE DATABASE `csaia_database`;
 CREATE TABLE `csaia_database`.`users` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -26,6 +27,7 @@ CREATE TABLE `csaia_database`.`flights` (
 );
 CREATE TABLE `csaia_database`.`images` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT,
+	`user_id` BIGINT,
 	`flight_id` BIGINT,
 	`directory_location` TEXT NOT NULL,
 	`image_extension` VARCHAR(25),

@@ -1,44 +1,78 @@
-from mysql.connector import connect, Error
+from dao import dao_tools
+from pypika import Query, Table, Field
 
 insert_images_query = """
 INSERT INTO images(
-flight_id, directory_location, image_extension, datetime, latitude, 
+user_id, flight_id, directory_location, image_extension, datetime, latitude, 
 longitude, altitude, image_width, image_height, exposure_time, 
 f_number, iso_speed, metering_mode, focal_length, light_source, 
 exposure_mode, white_balance, gain_control, contrast, saturation, 
 sharpness, image_compression, exif_version, software_version, 
 hardware_make, hardware_model, hardware_serial_number)
-VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 """
-
-insert_flights_query = """
-INSERT INTO flights(
-user_id, flight_name, manual_notes, address, field_name, 
-crop_name, average_latitude, average_longitude, average_altitude, flight_start_time, 
-flight_end_time, hardware_make, hardware_model)
-VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-"""
-
-
-def execute(query, *args):
-    standard_execution = True if args[0] is None else False
-    try:
-        with connect(
-                host="localhost",
-                user="root",
-                password="Password1234",
-                database="csaia_database",
-        ) as connection:
-            with connection.cursor() as cursor:
-                cursor.execute(query) if standard_execution else cursor.executemany(query, args[0])
-            connection.commit()
-    except Error as e:
-        print(e)
 
 
 def insert_images(image_records):
-    execute(insert_images_query, image_records)
+    dao_tools.execute(insert_images_query, image_records)
 
 
-def insert_flights(flight_records):
-    execute(insert_flights_query, flight_records)
+def select_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
+    """
+    General purpose image selection method built to cover a broad demand of queries
+    Each
+
+    Parameters
+    ----------
+    image_ids : list[int]
+        The optional list of image ids
+    user_ids : list[int]
+        The optional list of user ids
+    flight_ids : list[int]
+        The optional list of flight ids
+    extensions : list[str]
+        The optional list of image format extensions
+    datetime_range : objects.range
+        The optional range of datetimes
+    latitude_range : objects.range
+        The optional range of latitudes
+    longitude_range : objects.range
+        The optional range of longitudes
+    altitude_range : objects.range
+        The optional range of altitudes
+    make : str
+        The optional hardware make
+        NOTE: Uses a LIKE comparision, full hardware make is not necessary, case IN-sensitive
+    model : str
+        The optional hardware model
+        NOTE: Uses a LIKE comparision, full hardware model is not necessary, case IN-sensitive
+
+    Returns
+    -------
+    list[tuple]
+        Query results based on incoming parameters.
+        NOTE: This will return None for all SELECT queries that return no results.
+    """
+    images = Table('images')
+    select_image_query = Query.from_(images).select('*')
+    if image_ids is not None and len(image_ids) > 0:
+        select_image_query = select_image_query.where(images.id.isin(image_ids))
+    if user_ids is not None and len(user_ids) > 0:
+        select_image_query = select_image_query.where(images.user_id.isin(user_ids))
+    if flight_ids is not None and len(flight_ids) > 0:
+        select_image_query = select_image_query.where(images.flight_id.isin(flight_ids))
+    if extensions is not None and len(extensions) > 0:
+        select_image_query = select_image_query.where(images.image_extension.isin(extensions))
+    if datetime_range is not None:
+        select_image_query = select_image_query.where(images.datetime >= datetime_range.begin).where(images.datetime <= datetime_range.end)
+    if latitude_range is not None:
+        select_image_query = select_image_query.where(images.latitude >= latitude_range.begin).where(images.latitude <= latitude_range.end)
+    if longitude_range is not None:
+        select_image_query = select_image_query.where(images.longitude >= longitude_range.begin).where(images.longitude <= longitude_range.end)
+    if altitude_range is not None:
+        select_image_query = select_image_query.where(images.altitude >= altitude_range.begin).where(images.altitude <= altitude_range.end)
+    if make is not None:
+        select_image_query = select_image_query.where(images.hardware_make.like('%' + make + '%'))
+    if model is not None:
+        select_image_query = select_image_query.where(images.hardware_model.like('%' + model + '%'))
+    return dao_tools.execute(select_image_query.get_sql(quote_char=None))

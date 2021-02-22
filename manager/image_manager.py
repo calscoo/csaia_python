@@ -18,7 +18,7 @@ def none_check_int(val):
     return None if val is None else int(str(val))
 
 
-def upload_bulk_images_directory(bulk_dir):
+def upload_images(bulk_dir):
     image_records = []
     for root, subdirs, files in os.walk(bulk_dir):
         for file in files:
@@ -54,7 +54,7 @@ def upload_bulk_images_directory(bulk_dir):
                 ISOSpeed = none_check_int(tags.get('EXIF ISOSpeed')) or none_check_int(tags.get('EXIF ISOSpeedRatings'))
                 ExposureProgram = none_check_str(tags.get('EXIF ExposureProgram')) or none_check_str(tags.get('EXIF ExposureMode'))
 
-                image_records.insert(0, (None, str(imgPath), str(ext), DateTime, Latitude,
+                image_records.insert(0, (None, None, str(imgPath), str(ext), DateTime, Latitude,
                                          Longitude, Altitude, ImageWidth, ImageLength, ExposureTime,
                                          FNumber, ISOSpeed, MeteringMode, LightSource, FocalLength,
                                          ExposureProgram, WhiteBalance, GainControl, Contrast, Saturation,
@@ -62,3 +62,7 @@ def upload_bulk_images_directory(bulk_dir):
                                          Make, Model, BodySerialNumber))
 
     image_dao.insert_images(image_records)
+
+
+def fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
+    return image_dao.select_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
