@@ -1,5 +1,4 @@
-from dao import dao_tools
-from pypika import Query, Table, Field
+from daos.tools import dao_tools
 
 insert_flights_query = """
 INSERT INTO flights(

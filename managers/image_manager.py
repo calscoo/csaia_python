@@ -1,6 +1,6 @@
 import os
 import exifread
-from dao import image_dao
+from daos import image_dao
 from GPSPhoto import gpsphoto
 
 supported_formats = ('.jpg', '.jpeg', '.tif', '.tiff')

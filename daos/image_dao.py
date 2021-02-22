@@ -1,5 +1,5 @@
-from dao import dao_tools
-from pypika import Query, Table, Field
+from daos.tools import dao_tools
+from pypika import Query, Table
 
 insert_images_query = """
 INSERT INTO images(

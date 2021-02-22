@@ -1,4 +1,4 @@
-from manager import image_manager
+from managers import image_manager
 from objects.range import range
 
 image_directory = 'C:\\Users\\Caleb\\Downloads\\CCAST_CSAIA2'
