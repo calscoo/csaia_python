@@ -19,8 +19,9 @@ def insert_images(image_records):
 
 def select_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
     """
-    General purpose image selection method built to cover a broad demand of queries
-    Each
+    General purpose image selection method built to cover a broad demand of queries.
+    Every parameter can be None and list values can accept any number of elements including 0.
+    This was built to flesh out image selections in the manager without having to write complex queries.
 
     Parameters
     ----------
