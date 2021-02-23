@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from objects import flight
+from objects.flight import flight
 import os
 
 app = Flask(__name__)
@@ -19,7 +19,7 @@ app.config['TESTING'] = True
 def upload_file():
     if request.method == 'POST':
 
-        flight = flight()
+        flight_ = flight()
 
         # request.files contains all the files attached to the request
         for file in request.files.getlist('image'):
@@ -27,9 +27,6 @@ def upload_file():
 
         
         return jsonify(success=True)
-
-
-
 
 if __name__ == '__main__':
    app.run()

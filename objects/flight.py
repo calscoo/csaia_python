@@ -1,4 +1,4 @@
-class image:
+class flight:
     def __init__(self, id, user_id, flight_name, manual_notes, address, field_name, crop_name, average_latitude, average_longitude, average_altitude, flight_start_time, flight_end_time, hardware_make, hardware_model):
         self.id = id
         self.user_id = user_id
