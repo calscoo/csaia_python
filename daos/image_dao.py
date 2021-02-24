@@ -17,7 +17,7 @@ def insert_images(image_records):
     dao_tools.execute(insert_images_query, image_records)
 
 
-def select_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
+def select_images(select_columns, image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
     """
     General purpose image selection method built to cover a broad demand of queries.
     Every parameter can be None and list values can accept any number of elements including 0.
@@ -25,6 +25,9 @@ def select_images(image_ids, user_ids, flight_ids, extensions, datetime_range, l
 
     Parameters
     ----------
+    select_columns : string or None
+        The optional comma delimited string of columns to select on
+        NOTE: if this value is None, all (*) columns will be selected
     image_ids : list[int]
         The optional list of image ids
     user_ids : list[int]
@@ -52,10 +55,10 @@ def select_images(image_ids, user_ids, flight_ids, extensions, datetime_range, l
     -------
     list[tuple]
         Query results based on incoming parameters.
-        NOTE: This will return None for all SELECT queries that return no results.
+        NOTE: This will return None for queries that return no results.
     """
     images = Table('images')
-    select_image_query = Query.from_(images).select('*')
+    select_image_query = Query.from_(images).select('*' if select_columns is None else select_columns)
     if image_ids is not None and len(image_ids) > 0:
         select_image_query = select_image_query.where(images.id.isin(image_ids))
     if user_ids is not None and len(user_ids) > 0:
@@ -77,3 +80,23 @@ def select_images(image_ids, user_ids, flight_ids, extensions, datetime_range, l
     if model is not None:
         select_image_query = select_image_query.where(images.hardware_model.like('%' + model + '%'))
     return dao_tools.execute(select_image_query.get_sql(quote_char=None))
+
+
+def select_all_images(select_columns):
+    """
+    Delegates to image_dao.select_images
+    Used for selecting on all images without restrictions
+
+    Parameters
+    ----------
+    select_columns : string or None
+        The optional comma delimited string of columns to select on
+        NOTE: if this value is None, all (*) columns will be selected
+
+    Returns
+    -------
+    list[tuple]
+        Query results based on incoming parameters.
+        NOTE: This will return None for queries that return no results.
+    """
+    return select_images(select_columns, None, None, None, None, None, None, None, None, None, None)
