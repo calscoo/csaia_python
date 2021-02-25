@@ -57,4 +57,4 @@ def upload_images(bulk_dir):
 
 
 def fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
-    return image_dao.select_images_restricted('*', image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
+    return image_dao.select_images('*', image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
