@@ -1,10 +1,12 @@
-from managers import image_manager
-from objects.range import range
+from managers import flight_manager #, image_manager
+#from objects.range import range
 
 image_directory = 'C:\\Users\\Caleb\\Downloads\\CCAST_CSAIA2'
 
-image_manager.upload_images(image_directory)
+#image_manager.upload_images(image_directory)
+flight_manager.build_flight(image_directory,'Test', 'Test', 'Test', 'Test')
 
+'''
 image_ids = [1, 2, 45]
 user_ids = None
 flight_ids = None
@@ -15,5 +17,5 @@ longitude_range = range(-100, -98)
 altitude_range = range(450, 500)
 make = 'mica'
 model = 'edge'
-
+'''
 # print(image_manager.fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model))

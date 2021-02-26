@@ -9,6 +9,33 @@ supported_formats = ('.jpg', '.jpeg', '.tif', '.tiff')
 def none_check_str(val):
     return None if val is None else str(val)
 
+def get_Latitude():
+    return sum(latitudeList) / len(latitudeList)
+
+def get_Longitude():
+    return sum(longitudeList) / len(longitudeList)
+
+def get_Altitude():
+    return sum(altitudeList) / len(altitudeList)
+
+def get_start_Time():
+    return timeList[0]
+    
+def get_end_Time():
+    return timeList[-1]
+
+def get_Make():
+    return makeList[0]
+
+def get_Model():
+    return modelList[0]
+
+latitudeList = []
+longitudeList = []
+altitudeList = []
+timeList = []
+makeList = []
+modelList = []
 
 def upload_images(bulk_dir):
     image_records = []
@@ -45,6 +72,13 @@ def upload_images(bulk_dir):
                 image_width = none_check_str(tags.get('Image ImageLength')) or none_check_str(tags.get('EXIF ExifImageLength'))
                 iso_speed = none_check_str(tags.get('EXIF ISOSpeed')) or none_check_str(tags.get('EXIF ISOSpeedRatings'))
                 exposure_mode = none_check_str(tags.get('EXIF ExposureProgram')) or none_check_str(tags.get('EXIF ExposureMode'))
+
+                latitudeList.insert(0, float(latitude))
+                longitudeList.insert(0, float(longitude))
+                altitudeList.insert(0, float(altitude))
+                timeList.insert(0, date_time)
+                makeList.insert(0, hardware_make)
+                modelList.insert(0, hardware_model)
 
                 image_records.insert(0, (None, None, str(imgPath), str(ext), date_time, latitude,
                                          longitude, altitude, image_width, image_height, exposure_time,
