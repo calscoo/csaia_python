@@ -1,7 +1,6 @@
 import os
 import sys
 import re
-
 import exifread
 from GPSPhoto import gpsphoto
 
