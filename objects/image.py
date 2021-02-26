@@ -203,3 +203,35 @@ class image:
 
     def _set_hardware_serial_number(self, hardware_serial_number):
         self.hardware_serial_number = hardware_serial_number
+
+    def __str__(self):
+        return \
+            "image: { id: " + str(self.id) + ", " + \
+            "user_id: " + str(self.user_id) + ", " + \
+            "flight_id: " + str(self.flight_id) + ", " + \
+            "directory_location: " + str(self.directory_location) + ", " + \
+            "image_extension: " + str(self.image_extension) + ", " + \
+            "datetime: " + str(self.datetime) + ", " + \
+            "latitude: " + str(self.latitude) + ", " + \
+            "longitude: " + str(self.longitude) + ", " + \
+            "altitude: " + str(self.altitude) + ", " + \
+            "image_width: " + str(self.image_width) + ", " + \
+            "image_height: " + str(self.image_height) + ", " + \
+            "exposure_time: " + str(self.exposure_time) + ", " + \
+            "f_number: " + str(self.f_number) + ", " + \
+            "iso_speed: " + str(self.iso_speed) + ", " + \
+            "metering_mode: " + str(self.metering_mode) + ", " + \
+            "focal_length: " + str(self.focal_length) + ", " + \
+            "light_source: " + str(self.light_source) + ", " + \
+            "exposure_mode: " + str(self.exposure_mode) + ", " + \
+            "white_balance: " + str(self.white_balance) + ", " + \
+            "gain_control: " + str(self.gain_control) + ", " + \
+            "contrast: " + str(self.contrast) + ", " + \
+            "saturation: " + str(self.saturation) + ", " + \
+            "sharpness: " + str(self.sharpness) + ", " + \
+            "image_compression: " + str(self.image_compression) + ", " + \
+            "exif_version: " + str(self.exif_version) + ", " + \
+            "software_version: " + str(self.software_version) + ", " + \
+            "hardware_make: " + str(self.hardware_make) + ", " + \
+            "hardware_model: " + str(self.hardware_model) + ", " + \
+            "hardware_serial_number: " + str(self.hardware_serial_number) + " }"

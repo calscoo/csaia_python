@@ -33,3 +33,10 @@ class user:
         if not isinstance(role, roles):
             raise TypeError("role must be of type enums.role")
         self.role = role
+
+    def __str__(self):
+        return \
+            "user: { id: " + str(self.id) + ", " + \
+            "email: " + str(self.email) + ", " + \
+            "password: " + str(self.password) + ", " + \
+            "role: " + str(self.role) + " }"

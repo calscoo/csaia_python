@@ -1,5 +1,7 @@
 class flight:
-    def __init__(self, id, user_id, flight_name, manual_notes, address, field_name, crop_name, average_latitude, average_longitude, average_altitude, flight_start_time, flight_end_time, hardware_make, hardware_model):
+    def __init__(self, id, user_id, flight_name, manual_notes, address, field_name, crop_name, average_latitude,
+                 average_longitude, average_altitude, flight_start_time, flight_end_time, hardware_make,
+                 hardware_model):
         self.id = id
         self.user_id = user_id
         self.flight_name = flight_name
@@ -98,3 +100,20 @@ class flight:
 
     def _set_hardware_model(self, hardware_model):
         self.hardware_model = hardware_model
+
+    def __str__(self):
+        return \
+            "flight: { id: " + str(self.id) + ", " + \
+            "user_id: " + str(self.user_id) + ", " + \
+            "flight_name: " + str(self.flight_name) + ", " + \
+            "manual_notes: " + str(self.manual_notes) + ", " + \
+            "address: " + str(self.address) + ", " + \
+            "field_name: " + str(self.field_name) + ", " + \
+            "crop_name: " + str(self.crop_name) + ", " + \
+            "average_latitude: " + str(self.average_latitude) + ", " + \
+            "average_longitude: " + str(self.average_longitude) + ", " + \
+            "average_altitude: " + str(self.average_altitude) + ", " + \
+            "flight_start_time: " + str(self.flight_start_time) + ", " + \
+            "flight_end_time: " + str(self.flight_end_time) + ", " + \
+            "hardware_make: " + str(self.hardware_make) + ", " + \
+            "hardware_model: " + str(self.hardware_model) + " }"

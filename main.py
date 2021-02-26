@@ -5,7 +5,7 @@ image_directory = 'C:\\Users\\Caleb\\Downloads\\CCAST_CSAIA2'
 
 # image_manager.upload_images(image_directory)
 
-image_ids = [1, 2, 45]
+image_ids = None
 user_ids = None
 flight_ids = None
 extensions = ['.png', '.jpg', '.tif']
@@ -16,4 +16,6 @@ altitude_range = range(450, 500)
 make = 'mica'
 model = 'edge'
 
-print(image_manager.fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model))
+images = image_manager.fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
+for image in images:
+    print(str(image))
