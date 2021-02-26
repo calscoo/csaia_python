@@ -26,7 +26,7 @@ def execute(query, *args):
         with connect(
                 host="localhost",
                 user="root",
-                password="Password1234",
+                password="Low9mor@",
                 database="csaia_database",
         ) as connection:
             with connection.cursor() as cursor:
