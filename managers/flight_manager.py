@@ -3,20 +3,20 @@ from managers import image_manager
 
 def build_flight(path, flight, notes, field, crop):
     flight_records = []
-    image_manager.upload_images(path)
+    flight_info = image_manager.upload_images(path)
     user_id = None
     flight_name = flight #input("File name: ")
     manual_notes = notes #input("Notes: ")
     address = 'Test' # Using google maps for this field
     field_name = field #input("Field: ")
     crop_name = crop #input("Crop: ")
-    latitude = image_manager.get_Latitude()
-    longitude = image_manager.get_Longitude()
-    altitude = image_manager.get_Altitude()
-    start = image_manager.get_start_Time()
-    end = image_manager.get_end_Time()
-    make = image_manager.get_Make()
-    model = image_manager.get_Model() 
+    latitude = flight_info['average-latitude']
+    longitude = flight_info['average-longitude']
+    altitude = flight_info['average-altitude']
+    start = flight_info['start-time']
+    end = flight_info['end-time']
+    make = flight_info['make']
+    model = flight_info['model']
     average_latitude =  latitude
     average_longitude = longitude
     average_altitude = altitude

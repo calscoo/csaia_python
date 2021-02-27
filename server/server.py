@@ -1,7 +1,16 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from objects.flight import flight
-import os
+import os, sys
+from datetime import datetime
+
+# allows the script to access other python files in the repo
+sys.path.append('../')
+
+# external scripts must be imported after the previous line
+from objects.flight import flight as Flight
+from objects.image import image as Image
+import managers.image_manager
+import managers.flight_manager
 
 app = Flask(__name__)
 
@@ -15,15 +24,19 @@ app.config['DEBUG'] = True
 app.config['TESTING'] = True
 
 # Flight Upload Endpoint
-@app.route('/upload', methods=['GET', 'POST'])
+@app.route('/upload-flight', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
-
-        flight_ = flight()
+        cur_time = datetime.now().strftime("%Y%m%d-%H%M%S")
+        directory_name = 'uploaded/12345_' + cur_time
+        os.mkdir(directory_name)
 
         # request.files contains all the files attached to the request
         for file in request.files.getlist('image'):
-            file.save(os.path.join('uploaded', file.filename))
+            path = directory_name + '/' + file.filename
+            file.save(path)
+
+        managers.flight_manager.build_flight(os.path.abspath(directory_name) + '\\', 'test1', 'test2', 'test3', 'test4')
 
         
         return jsonify(success=True)

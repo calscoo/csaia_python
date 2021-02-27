@@ -14,7 +14,7 @@ VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
 
 
 def insert_images(image_records):
-    dao_tools.execute(insert_images_query, image_records)
+    result = dao_tools.execute(insert_images_query, image_records)
 
 
 def select_images(select_columns, image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
