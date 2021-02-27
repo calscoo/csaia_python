@@ -96,7 +96,7 @@ def upload_images(bulk_dir):
                     hardware_make, hardware_model, hardware_serial_number))
 
     # insert the images into the database
-    image_dao.insert_images(image_records)
+    ids = image_dao.insert_images(image_records)
 
     # returns flight-related data gathered from the images
     return {
@@ -106,7 +106,8 @@ def upload_images(bulk_dir):
         'start-time' : timeList[0],
         'end-time' : timeList[-1],
         'make' : makeList[0],
-        'model' : modelList[0]
+        'model' : modelList[0],
+        'ids' : ids
     }
 
 

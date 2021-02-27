@@ -7,9 +7,8 @@ from datetime import datetime
 sys.path.append('../')
 
 # external scripts must be imported after the previous line
-from objects.flight import flight as Flight
-from objects.image import image as Image
 import managers.image_manager
+from daos.image_dao import update_image_ids
 import managers.flight_manager
 
 app = Flask(__name__)
@@ -36,8 +35,10 @@ def upload_file():
             path = directory_name + '/' + file.filename
             file.save(path)
 
-        managers.flight_manager.build_flight(os.path.abspath(directory_name) + '\\', 'test1', 'test2', 'test3', 'test4')
+        flight_info = managers.flight_manager.build_flight(os.path.abspath(directory_name), 'test1', 'test2', 'test3', 'test4')
 
+        num_updated = update_image_ids(flight_info['image-ids'], flight_info['flight-id'])
+        print(num_updated)
         
         return jsonify(success=True)
 

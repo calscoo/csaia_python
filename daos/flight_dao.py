@@ -10,4 +10,4 @@ VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 
 
 def insert_flights(flight_records):
-    dao_tools.execute(insert_flights_query, flight_records)
+    return dao_tools.execute(insert_flights_query, flight_records)

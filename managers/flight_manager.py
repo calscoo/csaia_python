@@ -33,6 +33,5 @@ def build_flight(path, flight, notes, field, crop):
                             crop_name, average_latitude, average_longitude, average_altitude, flight_start_time,
                             flight_end_time, hardware_make, hardware_model))
 
-    flight_dao.insert_flights(flight_records)
-
-#print(build_flight('Test', 'Test', 'Test', 'Test'))
+    flight_id = flight_dao.insert_flights(flight_records)[0]
+    return {'flight-id' : flight_id, 'image-ids' : flight_info['ids']}
