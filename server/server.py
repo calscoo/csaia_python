@@ -37,8 +37,7 @@ def upload_file():
 
         flight_info = managers.flight_manager.build_flight(os.path.abspath(directory_name), 'test1', 'test2', 'test3', 'test4')
 
-        num_updated = update_image_ids(flight_info['image-ids'], flight_info['flight-id'])
-        print(num_updated)
+        update_image_ids(flight_info['image-ids'], flight_info['flight-id'])
         
         return jsonify(success=True)
 
