@@ -21,9 +21,11 @@ def get_Altitude():
     return sum(altitudeList) / len(altitudeList)
 
 def get_start_Time():
+    timeList.sort()
     return timeList[0]
 
 def get_end_Time():
+    timeList.sort()
     return timeList[-1]
 
 def get_Make():
