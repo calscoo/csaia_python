@@ -7,7 +7,6 @@ from GPSPhoto import gpsphoto
 
 supported_formats = ('.jpg', '.jpeg', '.tif', '.tiff')
 
-
 def none_check_str(val):
     return None if val is None else str(val)
 
@@ -33,14 +32,7 @@ def get_Make():
 
 def get_Model():
     return modelList[0]
-
-latitudeList = []
-longitudeList = []
-altitudeList = []
-timeList = []
-makeList = []
-modelList = []
-
+  
 def handle_integer_parse_errors(val):
     if val is None:
         return None
@@ -66,9 +58,18 @@ def images_rs_to_object_list(rs):
 
 def upload_images(bulk_dir):
     image_records = []
+
+    latitudeList = []
+    longitudeList = []
+    altitudeList = []
+    timeList = []
+    makeList = []
+    modelList = []
+    
     for root, subdirs, files in os.walk(bulk_dir):
         for file in files:
             path = os.path.join(root, file)
+            print(path)
             if path.lower().endswith(supported_formats):
                 try:
                     tags = exifread.process_file(open(path, 'rb'))
@@ -103,21 +104,34 @@ def upload_images(bulk_dir):
                 iso_speed = handle_integer_parse_errors(none_check_str(tags.get('EXIF ISOSpeed')) or none_check_str(tags.get('EXIF ISOSpeedRatings')))
                 exposure_mode = none_check_str(tags.get('EXIF ExposureProgram')) or none_check_str(tags.get('EXIF ExposureMode'))
 
-                latitudeList.insert(0, float(latitude))
-                longitudeList.insert(0, float(longitude))
-                altitudeList.insert(0, float(altitude))
-                timeList.insert(0, date_time)
-                makeList.insert(0, hardware_make)
-                modelList.insert(0, hardware_model)
+                latitudeList.append(float(latitude))
+                longitudeList.append(float(longitude))
+                altitudeList.append(float(altitude))
+                timeList.append(date_time)
+                makeList.append(hardware_make)
+                modelList.append(hardware_model)
 
-                image_records.insert(0, (None, None, str(path_to_store), str(ext), date_time, latitude,
-                                         longitude, altitude, image_width, image_height, exposure_time,
-                                         f_number, iso_speed, metering_mode, light_source, focal_length,
-                                         exposure_mode, white_balance, gain_control, contrast, saturation,
-                                         sharpness, image_compression, exif_version, software_version,
-                                         hardware_make, hardware_model, hardware_serial_number))
+                image_records.append((None, None, str(path_to_store), str(ext), date_time, latitude,
+                    longitude, altitude, image_width, image_height, exposure_time,
+                    f_number, iso_speed, metering_mode, light_source, focal_length,
+                    exposure_mode, white_balance, gain_control, contrast, saturation,
+                    sharpness, image_compression, exif_version, software_version,
+                    hardware_make, hardware_model, hardware_serial_number))
 
-    image_dao.insert_images(image_records)
+    # insert the images into the database
+    ids = image_dao.insert_images(image_records)
+
+    # returns flight-related data gathered from the images
+    return {
+        'average-latitude' : sum(latitudeList) / len(latitudeList),
+        'average-longitude' : sum(longitudeList) / len(longitudeList),
+        'average-altitude' : sum(altitudeList) / len(altitudeList),
+        'start-time' : timeList[0],
+        'end-time' : timeList[-1],
+        'make' : makeList[0],
+        'model' : modelList[0],
+        'ids' : ids
+    }
 
 
 def fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
