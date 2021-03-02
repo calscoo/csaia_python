@@ -31,6 +31,7 @@ skip_files = [
     '/gpfs1/projects/john.nowatzki/2017/Dicamba Drift/Rosholt Dicamba Drift/08012017/Rosholt_DicambaDrift_08012017/0004SET/000/IMG_0166_5.tif',
     '/gpfs1/projects/john.nowatzki/2017/Kathryn/PurpleLoosestrife/07132017/07132017_SlantRange_ValleyCity_PurpleLoosestrife/20170713T180342/GeoTIFF/1499969297.132.tif',
     '/gpfs1/projects/john.nowatzki/2017/Kathryn/PurpleLoosestrife/07132017/07132017_SlantRange_ValleyCity_PurpleLoosestrife/20170713T180342/GeoTIFF/1499969296.132.tif',
+    '/gpfs1/projects/john.nowatzki/2019/Sharp-tailed Grouse 2109/1BSE 4-10-19/1BSE.files/0/0/orthomosaic/tile-1-2.tif'
 ]
 
 

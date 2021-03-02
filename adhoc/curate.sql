@@ -11,3 +11,5 @@ INNER JOIN csaia_database.curate
 ON csaia_database.flights.flight_name = csaia_database.curate.image_parent_location
 INNER JOIN csaia_database.images
 ON csaia_database.images.id = csaia_database.curate.image_id;
+
+-- REMEMBER TO SET THE FLIGHT FIELDS TO NULLABLE AND ADJUST THE FLIGHT NAME TO TEXT BEFORE TESTING FURTHER
