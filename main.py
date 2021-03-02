@@ -3,8 +3,9 @@ from managers import flight_manager, image_manager
 
 image_directory = 'C:\\Users\\Caleb\\Downloads\\CCAST_CSAIA2'
 
-# image_manager.upload_images(image_directory)
-flight_manager.build_flight(image_directory,'Test', 'Test', 'Test', 'Test')
+# flight_manager.build_flight(image_directory,'Test1', 'Test1', 'Test1', 'Test1')
+# flight_manager.build_flight(image_directory,'Test2', 'Test2', 'Test2', 'Test2')
+image_manager.remove_images([314, 315, 316, 317, 318, 319, 320, 321])
 
 # image_ids = None
 # user_ids = None

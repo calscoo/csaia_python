@@ -1,3 +1,4 @@
+from daos import flight_dao
 from daos.tools import dao_tools
 from pypika import Query, Table
 
@@ -100,3 +101,21 @@ def select_all_images(select_columns):
         NOTE: This will return None for queries that return no results.
     """
     return select_images(select_columns, None, None, None, None, None, None, None, None, None, None)
+
+
+def delete_images(image_ids):
+    """
+    Deletes all the images in the database containing the passed ids
+    NOTE: Checks if the images exist before deletion
+
+    Parameters
+    ----------
+    image_ids : list of int
+        The ids of the images to delete
+    """
+    images_to_delete = select_images('id', image_ids, None, None, None, None, None, None, None, None, None)
+    image_ids_to_delete = None if len(images_to_delete[0]) == 0 else images_to_delete[0]
+    if image_ids_to_delete is not None:
+        images = Table('flights')
+        delete_images_query = Query.from_(images).delete().where(images.id.isin([image_ids_to_delete]))
+        dao_tools.execute(delete_images_query.get_sql(quote_char=None))

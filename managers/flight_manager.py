@@ -71,3 +71,16 @@ def build_flight(path, flight, notes, field, crop):
         image.flight_id = flight_id
     image_manager.upload_images(images)
     return flight_id
+
+
+def remove_flight(flight_id):
+    """
+    Removes the flight matching the passed id
+    NOTE: This will remove all of the flights images as well as the flight itself
+
+    Parameters
+    ----------
+    flight_id : int
+        The id of the flight to remove
+    """
+    flight_dao.delete_flight(flight_id)

@@ -56,5 +56,5 @@ CREATE TABLE `csaia_database`.`images` (
 	`hardware_model` VARCHAR(100),
 	`hardware_serial_number` VARCHAR(255),
 	PRIMARY KEY (`id`),
-    FOREIGN KEY (`flight_id`) REFERENCES flights(`id`)
+    FOREIGN KEY (`flight_id`) REFERENCES flights(`id`) ON DELETE CASCADE
 );

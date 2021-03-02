@@ -1,6 +1,7 @@
 import os
 import exifread
 
+from managers import flight_manager
 from objects.image import image
 from daos import image_dao
 from GPSPhoto import gpsphoto
@@ -136,4 +137,29 @@ def upload_images(images):
 def fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
     rs = image_dao.select_images('*', image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
     return images_rs_to_object_list(rs)
+
+
+def remove_images(image_ids):
+    """
+    Removes all the images containing the passed ids
+    NOTE: This will also remove images flight if the image deletion leaves a flight without images
+
+    Parameters
+    ----------
+    image_ids : list of int
+        The ids of the images to remove
+    """
+    flight_ids = set()
+    image_ids_to_delete = set()
+    images_to_delete = image_dao.select_images('id, flight_id', image_ids, None, None, None, None, None, None, None, None, None)
+    if images_to_delete is not None and len(images_to_delete) > 0:
+        for image in images_to_delete:
+            flight_ids.add(image[1])
+            image_ids_to_delete.add(image[0])
+        image_dao.delete_images(image_ids_to_delete)
+        for flight_id in flight_ids:
+            if flight_id is not None:
+                flight_remaining_images = image_dao.select_images('count(*)', None, None, [flight_id], None, None, None, None, None, None, None)[0][0]
+                if flight_remaining_images == 0:
+                    flight_manager.remove_flight(flight_id)
 
