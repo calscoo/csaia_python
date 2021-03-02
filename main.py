@@ -3,7 +3,7 @@ from managers import flight_manager, image_manager
 
 image_directory = 'C:\\Users\\Caleb\\Downloads\\CCAST_CSAIA2'
 
-#image_manager.upload_images(image_directory)
+# image_manager.upload_images(image_directory)
 flight_manager.build_flight(image_directory,'Test', 'Test', 'Test', 'Test')
 
 # image_ids = None

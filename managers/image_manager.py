@@ -1,38 +1,17 @@
 import os
 import exifread
-import re
+
 from objects.image import image
 from daos import image_dao
 from GPSPhoto import gpsphoto
 
 supported_formats = ('.jpg', '.jpeg', '.tif', '.tiff')
 
+
 def none_check_str(val):
     return None if val is None else str(val)
 
-def get_Latitude():
-    return sum(latitudeList) / len(latitudeList)
 
-def get_Longitude():
-    return sum(longitudeList) / len(longitudeList)
-
-def get_Altitude():
-    return sum(altitudeList) / len(altitudeList)
-
-def get_start_Time():
-    timeList.sort()
-    return timeList[0]
-
-def get_end_Time():
-    timeList.sort()
-    return timeList[-1]
-
-def get_Make():
-    return makeList[0]
-
-def get_Model():
-    return modelList[0]
-  
 def handle_integer_parse_errors(val):
     if val is None:
         return None
@@ -41,10 +20,6 @@ def handle_integer_parse_errors(val):
     except ValueError:
         return None
     return val
-
-
-def fix_quotes(val):
-    return re.sub("'", "\\'", val)
 
 
 def images_rs_to_object_list(rs):
@@ -56,27 +31,55 @@ def images_rs_to_object_list(rs):
     return images
 
 
-def upload_images(bulk_dir):
-    image_records = []
+def image_objects_to_insert_tuple(list_images):
+    """
+    Reformats a list of images to a list of tuples for database insertion.
 
-    latitudeList = []
-    longitudeList = []
-    altitudeList = []
-    timeList = []
-    makeList = []
-    modelList = []
-    
-    for root, subdirs, files in os.walk(bulk_dir):
+    Parameters
+    ----------
+    list_images : list of objects.image
+        the list of images to convert
+
+    Returns
+    -------
+    tuple_images : list of tuples
+        the list of tuples containing image attributes for database insertion
+    """
+    tuple_images = []
+    for image in list_images:
+        tuple_images.append((None, image.flight_id, image.directory_location, image.image_extension, image.datetime, image.latitude,
+                              image.longitude, image.altitude, image.image_width, image.image_height, image.exposure_time,
+                              image.f_number, image.iso_speed, image.metering_mode, image.light_source, image.focal_length,
+                              image.exposure_mode, image.white_balance, image.gain_control, image.contrast, image.saturation,
+                              image.sharpness, image.image_compression, image.exif_version, image.software_version,
+                              image.hardware_make, image.hardware_model, image.hardware_serial_number))
+    return tuple_images
+
+
+def parse_image_metadata(image_dir):
+    """
+    Parses a directory for all supported images, grabs their metadata and assigns each set of metadata to an image object
+
+    Parameters
+    ----------
+    image_dir : str
+        the directory to parse for images
+
+    Returns
+    -------
+    images : list of objects.image
+        the list of images containing useful metadata
+    """
+    images = []
+    for root, subdirs, files in os.walk(image_dir):
         for file in files:
             path = os.path.join(root, file)
-            print(path)
             if path.lower().endswith(supported_formats):
                 try:
                     tags = exifread.process_file(open(path, 'rb'))
                     gps_data = gpsphoto.getGPSData(path)
                 except:
                     raise RuntimeError('Failed to parse image metadata for: ' + str(path))
-                path_to_store = fix_quotes(path)
                 ext = os.path.splitext(file)[1].lower()
                 latitude = none_check_str(gps_data.get('Latitude'))
                 longitude = none_check_str(gps_data.get('Longitude'))
@@ -99,41 +102,38 @@ def upload_images(bulk_dir):
                 sharpness = none_check_str(tags.get('EXIF Sharpness'))
                 image_compression = none_check_str(tags.get('Image Compression'))
 
-                image_height = handle_integer_parse_errors(none_check_str(tags.get('Image ImageWidth')) or none_check_str(tags.get('EXIF ExifImageWidth')))
-                image_width = handle_integer_parse_errors(none_check_str(tags.get('Image ImageLength')) or none_check_str(tags.get('EXIF ExifImageLength')))
-                iso_speed = handle_integer_parse_errors(none_check_str(tags.get('EXIF ISOSpeed')) or none_check_str(tags.get('EXIF ISOSpeedRatings')))
-                exposure_mode = none_check_str(tags.get('EXIF ExposureProgram')) or none_check_str(tags.get('EXIF ExposureMode'))
+                image_height = handle_integer_parse_errors(
+                    none_check_str(tags.get('Image ImageWidth')) or none_check_str(tags.get('EXIF ExifImageWidth')))
+                image_width = handle_integer_parse_errors(
+                    none_check_str(tags.get('Image ImageLength')) or none_check_str(tags.get('EXIF ExifImageLength')))
+                iso_speed = handle_integer_parse_errors(
+                    none_check_str(tags.get('EXIF ISOSpeed')) or none_check_str(tags.get('EXIF ISOSpeedRatings')))
+                exposure_mode = none_check_str(tags.get('EXIF ExposureProgram')) or none_check_str(
+                    tags.get('EXIF ExposureMode'))
+                images.append(image(None, None, None, path, ext, date_time, latitude, longitude, altitude, image_width, image_height, exposure_time, f_number, iso_speed, metering_mode, focal_length, light_source, exposure_mode, white_balance, gain_control, contrast, saturation, sharpness, image_compression, exif_version, software_version, hardware_make, hardware_model, hardware_serial_number))
+    return images
 
-                latitudeList.append(float(latitude))
-                longitudeList.append(float(longitude))
-                altitudeList.append(float(altitude))
-                timeList.append(date_time)
-                makeList.append(hardware_make)
-                modelList.append(hardware_model)
 
-                image_records.append((None, None, str(path_to_store), str(ext), date_time, latitude,
-                    longitude, altitude, image_width, image_height, exposure_time,
-                    f_number, iso_speed, metering_mode, light_source, focal_length,
-                    exposure_mode, white_balance, gain_control, contrast, saturation,
-                    sharpness, image_compression, exif_version, software_version,
-                    hardware_make, hardware_model, hardware_serial_number))
+def upload_images(images):
+    """
+    For uploading multiple images to the database
+    NOTE: images must pass through image_manager.parse_image_metadata to have metadata populated
 
-    # insert the images into the database
-    ids = image_dao.insert_images(image_records)
+    Parameters
+    ----------
+    images : list of objects.image
+        the images to upload
 
-    # returns flight-related data gathered from the images
-    return {
-        'average-latitude' : sum(latitudeList) / len(latitudeList),
-        'average-longitude' : sum(longitudeList) / len(longitudeList),
-        'average-altitude' : sum(altitudeList) / len(altitudeList),
-        'start-time' : timeList[0],
-        'end-time' : timeList[-1],
-        'make' : makeList[0],
-        'model' : modelList[0],
-        'ids' : ids
-    }
+    Returns
+    -------
+    image ids : list of int
+        the list of image ids that have been uploaded
+    """
+    images_to_insert = image_objects_to_insert_tuple(images)
+    return image_dao.insert_images(images_to_insert)
 
 
 def fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
     rs = image_dao.select_images('*', image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
     return images_rs_to_object_list(rs)
+
