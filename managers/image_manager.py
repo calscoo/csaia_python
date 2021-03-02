@@ -10,6 +10,29 @@ supported_formats = ('.jpg', '.jpeg', '.tif', '.tiff')
 def none_check_str(val):
     return None if val is None else str(val)
 
+def get_Latitude():
+    return sum(latitudeList) / len(latitudeList)
+
+def get_Longitude():
+    return sum(longitudeList) / len(longitudeList)
+
+def get_Altitude():
+    return sum(altitudeList) / len(altitudeList)
+
+def get_start_Time():
+    timeList.sort()
+    return timeList[0]
+
+def get_end_Time():
+    timeList.sort()
+    return timeList[-1]
+
+def get_Make():
+    return makeList[0]
+
+def get_Model():
+    return modelList[0]
+  
 def handle_integer_parse_errors(val):
     if val is None:
         return None
