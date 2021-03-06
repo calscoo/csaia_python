@@ -13,6 +13,12 @@ hardware_make, hardware_model, hardware_serial_number)
 VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 """
 
+update_image_flight_id_query = """
+UPDATE images
+SET flight_id = %s
+WHERE id IN (%s);
+"""
+
 
 def insert_images(image_records):
     return dao_tools.execute(insert_images_query, image_records)
@@ -119,3 +125,10 @@ def delete_images(image_ids):
         images = Table('flights')
         delete_images_query = Query.from_(images).delete().where(images.id.isin([image_ids_to_delete]))
         dao_tools.execute(delete_images_query.get_sql(quote_char=None))
+
+def update_image_ids(image_ids, flight_id):
+    objects = []
+    for image_id in image_ids:
+        objects.append([flight_id, image_id])
+    # print(objects)
+    return dao_tools.execute(update_image_flight_id_query, objects)
