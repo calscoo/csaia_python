@@ -48,6 +48,7 @@ def calculate_flight_metadata(images):
 
 
 def build_flight(path, flight, notes, field, crop):
+    flight_info = image_manager.upload_images(path)
     images = image_manager.parse_image_metadata(path)
     flight_metadata = calculate_flight_metadata(images)
     user_id = None
@@ -61,16 +62,13 @@ def build_flight(path, flight, notes, field, crop):
           type(average_latitude), type(average_longitude), type(average_altitude), type(flight_start_time), type(flight_end_time),
           type(hardware_make), type(hardware_model))
     '''
-    flight_records = []
-    flight_records.insert(0, (user_id, flight_name, manual_notes, address, field_name,
-                            crop_name, flight_metadata.average_latitude, flight_metadata.average_longitude, flight_metadata.average_altitude, flight_metadata.flight_start_time,
-                            flight_metadata.flight_end_time, flight_metadata.hardware_make, flight_metadata.hardware_model))
+    flight_records = [(user_id, flight_name, manual_notes, address, field_name,
+        crop_name, flight_metadata.average_latitude, flight_metadata.average_longitude, flight_metadata.average_altitude,
+        flight_metadata.flight_start_time, flight_metadata.flight_end_time, flight_metadata.hardware_make,
+        flight_metadata.hardware_model)]
 
     flight_id = flight_dao.insert_flights(flight_records)[0]
-    for image in images:
-        image.flight_id = flight_id
-    image_manager.upload_images(images)
-    return flight_id
+    return {'flight-id' : flight_id, 'image-ids' : flight_info['ids']}
 
 
 def remove_flight(flight_id):

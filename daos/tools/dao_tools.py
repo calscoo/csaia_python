@@ -43,7 +43,6 @@ def execute(query, *args):
                         ids.append(cursor.lastrowid)
                         
             connection.commit()
-
             return ids
 
     except Error as e:
