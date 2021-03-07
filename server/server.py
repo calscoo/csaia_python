@@ -1,9 +1,9 @@
+from shutil import copyfile, make_archive, rmtree
 from flask import Flask, json, jsonify, request
 from flask.helpers import send_file
+from datetime import datetime
 from flask_cors import CORS
 import os, sys
-from datetime import datetime
-from shutil import copyfile, make_archive, rmtree
 
 # allows the script to access other python files in the repo
 sys.path.append('../')
@@ -16,6 +16,7 @@ from objects import range as Range
 
 app = Flask(__name__)
 
+# time format for use in file naming
 time_format = '%Y%m%d-%H%M%S'
 
 # CORS policies need to be modified, this isn't secure
@@ -27,11 +28,13 @@ app.config['ENV'] = 'development'
 app.config['DEBUG'] = True
 app.config['TESTING'] = True
 
+'''
+GET
+Sends the client a list of objects that match
+multiple query parameters obtained through the request parameters
+'''
 @app.route('/query')
 def query_image():
-    # process to remove any old zip files in the zipped folder
-    clean_zipped()
-
     # unpack request parameters
     image_ids = request.args.get('image_ids')
     if (image_ids == 'null'):
@@ -48,7 +51,7 @@ def query_image():
     else:
         user_ids = str(user_ids).split(',')
 
-        for i in range(0, len(user_ids)): 
+        for i in range(0, len(user_ids)):
             user_ids[i] = int(user_ids[i])
 
     flight_ids = request.args.get('flight_ids')
@@ -102,9 +105,47 @@ def query_image():
     if (model == 'null'):
         model = None
 
-
     # get file path from database
     results = managers.image_manager.fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
+
+    return_object = {
+        'objects' : []
+    }
+
+    for image in results:
+        return_object['objects'].append({
+            'id': image.id,
+            'user_id': image.user_id,
+            'flight_id': image.flight_id,
+            'image_extension': image.image_extension,
+            'datetime' : image.datetime,
+            'latitude': float(image.latitude),
+            'longitude': float(image.longitude),
+            'altitude': float(image.altitude)
+        })
+
+    return jsonify(return_object)
+
+'''
+GET
+Sends the client a zipped file of images
+Images are fetched via "image_ids" request argument
+'''
+@app.route('/prepare-zip')
+def prepare_zip():
+    # process to remove any old zip files in the zipped folder
+    clean_zipped()
+
+    image_ids = request.args.get('image_ids')
+    if (image_ids == 'null'):
+        image_ids = None
+    else:
+        image_ids = str(image_ids).split(',')
+
+        for i in range(0, len(image_ids)): 
+            image_ids[i] = int(image_ids[i])
+
+    results = managers.image_manager.fetch_images(image_ids, None, None, None, None, None, None, None, None, None)
 
     # handle edge cases
     if (len(results) == 0):
@@ -131,9 +172,17 @@ def query_image():
     rmtree(directory_name)
 
     # send zip over to user
-    return send_file(zip_name, as_attachment=True)
+    # return send_file(zip_name, as_attachment=True)
+    return jsonify(zip_name=os.path.basename(zip_name))
 
-# Flight Upload Endpoint
+@app.route('/download-zip/<name>')
+def download_zip(name):
+    return send_file('zipped\\' + name, as_attachment=True)
+
+'''
+POST
+Allows the client to upload flights
+'''
 @app.route('/upload-flight', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
@@ -142,10 +191,10 @@ def upload_file():
         os.mkdir(directory_name)
 
         # get flight-based request args
-        flight_name = request.args.get('flight_name')
-        notes = request.args.get('notes')
-        field_name = request.args.get('field_name')
-        crop = request.args.get('crop')
+        flight_name = request.form['flight_name']
+        notes = request.form['notes']
+        field_name = request.form['field_name']
+        crop = request.form['crop']
 
         # request.files contains all the files attached to the request
         for file in request.files.getlist('image'):
@@ -160,6 +209,12 @@ def upload_file():
         
         return jsonify(success=True)
 
+'''
+Method to keep server files to a miniumum
+
+Deletes all files in the zipped folder that
+were made more than 10 seconds ago
+'''
 def clean_zipped():
     for filename in os.listdir('zipped'):
         # parse out the time this file was created via name
