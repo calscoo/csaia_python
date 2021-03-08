@@ -112,23 +112,13 @@ def select_all_images(select_columns):
 def delete_images(image_ids):
     """
     Deletes all the images in the database containing the passed ids
-    NOTE: Checks if the images exist before deletion
 
     Parameters
     ----------
     image_ids : list of int
         The ids of the images to delete
     """
-    images_to_delete = select_images('id', image_ids, None, None, None, None, None, None, None, None, None)
-    image_ids_to_delete = None if len(images_to_delete[0]) == 0 else images_to_delete[0]
-    if image_ids_to_delete is not None:
-        images = Table('flights')
-        delete_images_query = Query.from_(images).delete().where(images.id.isin([image_ids_to_delete]))
+    if image_ids is not None:
+        images = Table('images')
+        delete_images_query = Query.from_(images).delete().where(images.id.isin(image_ids))
         dao_tools.execute(delete_images_query.get_sql(quote_char=None))
-
-def update_image_ids(image_ids, flight_id):
-    objects = []
-    for image_id in image_ids:
-        objects.append([flight_id, image_id])
-    # print(objects)
-    return dao_tools.execute(update_image_flight_id_query, objects)

@@ -202,10 +202,7 @@ def upload_file():
             file.save(path)
 
         # build flight
-        flight_info = managers.flight_manager.build_flight(os.path.abspath(directory_name), flight_name, notes, field_name, crop)
-
-        # assign flight id to images
-        update_image_ids(flight_info['image-ids'], flight_info['flight-id'])
+        managers.flight_manager.build_flight(os.path.abspath(directory_name), flight_name, notes, field_name, crop)
         
         return jsonify(success=True)
 

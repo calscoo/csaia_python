@@ -121,9 +121,7 @@ def select_all_flights(select_columns):
 
 
 def delete_flight(flight_id):
-    flight_to_delete = select_flights('id', [flight_id], None, None, None, None, None, None, None, None, None, None, None, None, None)
-    flight_id_to_delete = None if len(flight_to_delete) == 0 else flight_to_delete[0][0]
-    if flight_id_to_delete is not None:
+    if flight_id is not None:
         flights = Table('flights')
-        delete_flight_query = Query.from_(flights).delete().where(flights.id.isin([flight_id_to_delete]))
+        delete_flight_query = Query.from_(flights).delete().where(flights.id.isin([flight_id]))
         dao_tools.execute(delete_flight_query.get_sql(quote_char=None))

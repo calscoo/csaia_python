@@ -48,7 +48,6 @@ def calculate_flight_metadata(images):
 
 
 def build_flight(path, flight, notes, field, crop):
-    flight_info = image_manager.upload_images(path)
     images = image_manager.parse_image_metadata(path)
     flight_metadata = calculate_flight_metadata(images)
     user_id = None
@@ -68,17 +67,39 @@ def build_flight(path, flight, notes, field, crop):
         flight_metadata.hardware_model)]
 
     flight_id = flight_dao.insert_flights(flight_records)[0]
-    return {'flight-id' : flight_id, 'image-ids' : flight_info['ids']}
+    for image in images:
+        image.flight_id = flight_id
+    ids = image_manager.upload_images(images)
+    return {
+        'flight-id' : flight_id,
+        'user-id' : user_id,
+        'flight-name' : flight_name,
+        'manual-notes' : manual_notes,
+        'address' : address,
+        'field-name' : field_name,
+        'crop-name' : crop_name,
+        'average-latitude' : flight_metadata.average_latitude,
+        'average-longitude' : flight_metadata.average_longitude,
+        'average-altitude' : flight_metadata.average_altitude,
+        'start-time' : flight_metadata.flight_start_time,
+        'end-time' : flight_metadata.flight_end_time,
+        'make' : flight_metadata.hardware_make,
+        'model' : flight_metadata.hardware_model,
+        'image_ids' : ids
+    }
 
 
 def remove_flight(flight_id):
     """
     Removes the flight matching the passed id
     NOTE: This will remove all of the flights images as well as the flight itself
+    NOTE: Checks if the flight exists before deletion
 
     Parameters
     ----------
     flight_id : int
         The id of the flight to remove
     """
-    flight_dao.delete_flight(flight_id)
+    flight_to_delete = flight_dao.select_flights('id', [flight_id], None, None, None, None, None, None, None, None, None, None, None, None, None)
+    flight_id_to_delete = None if len(flight_to_delete) == 0 else flight_to_delete[0][0]
+    flight_dao.delete_flight(flight_id_to_delete)
