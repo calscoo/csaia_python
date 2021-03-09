@@ -1,4 +1,6 @@
 import os
+import re
+
 import exifread
 
 from managers import flight_manager
@@ -21,6 +23,10 @@ def handle_integer_parse_errors(val):
     except ValueError:
         return None
     return val
+
+
+def fix_quotes(val):
+    return re.sub("'", "''", val)
 
 
 def images_rs_to_object_list(rs):

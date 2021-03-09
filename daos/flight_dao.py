@@ -97,7 +97,7 @@ def select_flights(select_columns, flight_ids, user_ids, flight_name, manual_not
         select_flights_query = select_flights_query.where(flights.hardware_make.like('%' + make + '%'))
     if model is not None:
         select_flights_query = select_flights_query.where(flights.hardware_model.like('%' + model + '%'))
-    return dao_tools.execute(select_flights_query.get_sql(quote_char=None))
+    return dao_tools.execute(select_flights_query)
 
 
 def select_all_flights(select_columns):
@@ -124,4 +124,4 @@ def delete_flight(flight_id):
     if flight_id is not None:
         flights = Table('flights')
         delete_flight_query = Query.from_(flights).delete().where(flights.id.isin([flight_id]))
-        dao_tools.execute(delete_flight_query.get_sql(quote_char=None))
+        dao_tools.execute(delete_flight_query)

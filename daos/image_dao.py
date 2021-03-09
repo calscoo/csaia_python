@@ -86,7 +86,7 @@ def select_images(select_columns, image_ids, user_ids, flight_ids, extensions, d
         select_image_query = select_image_query.where(images.hardware_make.like('%' + make + '%'))
     if model is not None:
         select_image_query = select_image_query.where(images.hardware_model.like('%' + model + '%'))
-    return dao_tools.execute(select_image_query.get_sql(quote_char=None))
+    return dao_tools.execute(select_image_query)
 
 
 def select_all_images(select_columns):
@@ -121,4 +121,4 @@ def delete_images(image_ids):
     if image_ids is not None:
         images = Table('images')
         delete_images_query = Query.from_(images).delete().where(images.id.isin(image_ids))
-        dao_tools.execute(delete_images_query.get_sql(quote_char=None))
+        dao_tools.execute(delete_images_query)

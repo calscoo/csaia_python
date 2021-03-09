@@ -1,4 +1,5 @@
 -- This schema represents our current db model and allows for ease of setup on new machines.
+SET GLOBAL max_allowed_packet=1073741824;
 CREATE DATABASE `csaia_database`;
 CREATE TABLE `csaia_database`.`users` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT,
@@ -10,7 +11,7 @@ CREATE TABLE `csaia_database`.`users` (
 CREATE TABLE `csaia_database`.`flights` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT,
 	`user_id` BIGINT,
-	`flight_name` VARCHAR(100),
+	`flight_name` TEXT,
 	`manual_notes` VARCHAR(255),
 	`address` VARCHAR(255),
 	`field_name` VARCHAR(100),

@@ -1,4 +1,4 @@
-class flight_metadata:
+class flight_derived_metadata:
 
     def __init__(self, average_latitude, average_longitude, average_altitude, flight_start_time, flight_end_time, hardware_make, hardware_model):
         self._set_average_latitude(average_latitude)
@@ -53,7 +53,7 @@ class flight_metadata:
 
     def __str__(self):
         return \
-            "flight_metadata: { average_latitude: " + str(self.average_latitude) + ", " + \
+            "flight_partial_metadata: { average_latitude: " + str(self.average_latitude) + ", " + \
             "average_longitude: " + str(self.average_longitude) + ", " + \
             "average_altitude: " + str(self.average_altitude) + ", " + \
             "flight_start_time: " + str(self.flight_start_time) + ", " + \

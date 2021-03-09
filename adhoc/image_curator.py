@@ -50,7 +50,7 @@ def handle_integer_parse_errors(val):
 
 
 def fix_quotes(val):
-    return re.sub("'", "\'", val)
+    return re.sub("'", "''", val)
 
 
 def curate(directories, query_output_file):

@@ -1,9 +1,10 @@
 from daos import flight_dao
 from managers import image_manager
-from objects.flight_metadata import flight_metadata
+from objects.flight import flight
+from objects.flight_derived_metadata import flight_derived_metadata
 
 
-def calculate_flight_metadata(images):
+def calculate_derived_flight_metadata(images):
     """
     Calculates the necessary metadata for a flight, from a list of image objects
     Supports None latitude, longitude and altitude values.
@@ -16,7 +17,7 @@ def calculate_flight_metadata(images):
 
     Returns
     -------
-    flight_metadata : objects.flight_metadata
+    flight_metadata : objects.flight_derived_metadata
         object containing the metadata for a flight
     """
     lat_count, lat_total, lon_count, lon_total, alt_count, alt_total = 0, 0, 0, 0, 0, 0
@@ -25,31 +26,45 @@ def calculate_flight_metadata(images):
     for image in images:
         make = image.hardware_make if image.hardware_make is not None else make
         model = image.hardware_model if image.hardware_model is not None else model
-        times.append(image.datetime)
-        lat = float(image.latitude)
+        datetime = image.datetime
+        if datetime is not None:
+            times.append(datetime)
+        lat = image.latitude
         if lat is not None:
+            lat = float(lat)
             lat_count = lat_count + 1
             lat_total = lat_total + lat
-        lon = float(image.longitude)
+        lon = image.longitude
         if lon is not None:
+            lon = float(lon)
             lon_count = lon_count + 1
             lon_total = lon_total + lon
-        alt = float(image.altitude)
+        alt = image.altitude
         if alt is not None:
+            alt = float(alt)
             alt_count = alt_count + 1
             alt_total = alt_total + alt
-    average_latitude = lat_total / lat_count
-    average_longitude = lon_total / lon_count
-    average_altitude = alt_total / alt_count
+    average_latitude = None if lat_count == 0 else lat_total / lat_count
+    average_longitude = None if lon_count == 0 else lon_total / lon_count
+    average_altitude = None if alt_count == 0 else alt_total / alt_count
     times.sort()
     start_time = times[0]
     end_time = times[-1]
-    return flight_metadata(average_latitude, average_longitude, average_altitude, start_time, end_time, make, model)
+    return flight_derived_metadata(average_latitude, average_longitude, average_altitude, start_time, end_time, make, model)
+
+
+def flights_rs_to_object_list(rs):
+    images = []
+    if rs is not None:
+        for tuple in rs:
+            if tuple is not None:
+                images.append(flight(tuple[0], tuple[1], tuple[2], tuple[3], tuple[4], tuple[5], tuple[6], tuple[7], tuple[8], tuple[9], tuple[10], tuple[11], tuple[12], tuple[13]))
+    return images
 
 
 def build_flight(path, flight, notes, field, crop):
     images = image_manager.parse_image_metadata(path)
-    flight_metadata = calculate_flight_metadata(images)
+    flight_metadata = calculate_derived_flight_metadata(images)
     user_id = None
     flight_name = flight  # input("File name: ")
     manual_notes = notes  # input("Notes: ")
@@ -87,6 +102,11 @@ def build_flight(path, flight, notes, field, crop):
         'model' : flight_metadata.hardware_model,
         'image_ids' : ids
     }
+
+
+def fetch_flights(flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model):
+    rs = flight_dao.select_flights('*', flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model)
+    return flights_rs_to_object_list(rs)
 
 
 def remove_flight(flight_id):

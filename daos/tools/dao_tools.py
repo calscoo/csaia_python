@@ -1,5 +1,6 @@
 from mysql.connector import connect, Error
 
+
 def execute(query, *args):
     """
     General method for executing queries on the database. Queries can be passed with a list of tuples for multiple
@@ -8,7 +9,7 @@ def execute(query, *args):
 
     Parameters
     ----------
-    query : str
+    query : Query
         The query to be executed
     args : list[tuple]
         OPTIONAL list of tuples to be inserted
@@ -33,7 +34,7 @@ def execute(query, *args):
 
             with connection.cursor() as cursor:
                 if standard_execution:
-                    cursor.execute(query)
+                    cursor.execute(query.get_sql(quote_char=None))
                     result = cursor.fetchall()
                     if len(result) > 0:
                         return result
