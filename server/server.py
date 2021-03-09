@@ -10,7 +10,6 @@ sys.path.append('../')
 
 # external scripts must be imported after the previous line
 import managers.image_manager
-from daos.image_dao import update_image_ids
 import managers.flight_manager
 from objects import range as Range
 
