@@ -4,14 +4,6 @@ import re
 import exifread
 from GPSPhoto import gpsphoto
 
-handle_batch_insertion_errors = """
-SHOW VARIABLES where Variable_name like '%timeout';
-SET GLOBAL connect_timeout=660;
-SET GLOBAL wait_timeout=2147483;
-SET GLOBAL max_allowed_packet=1073741824;
-SELECT @@global.max_allowed_packet;
-"""
-
 supported_formats = ('.jpg', '.jpeg', '.tif', '.tiff')
 
 skip_files = [
