@@ -23,6 +23,7 @@ CREATE TABLE `csaia_database`.`flights` (
 	`flight_end_time` DATETIME,
 	`hardware_make` VARCHAR(100),
 	`hardware_model` VARCHAR(100),
+	`privacy` TINYINT NOT NULL,
 	PRIMARY KEY (`id`),
     FOREIGN KEY (`user_id`) REFERENCES users(`id`)
 );
@@ -59,4 +60,16 @@ CREATE TABLE `csaia_database`.`images` (
 	PRIMARY KEY (`id`),
     FOREIGN KEY (`user_id`) REFERENCES users(`id`),
     FOREIGN KEY (`flight_id`) REFERENCES flights(`id`) ON DELETE CASCADE
+);
+CREATE TABLE `csaia_database`.`orthomosaics` (
+	`id` BIGINT NOT NULL AUTO_INCREMENT,
+	`directory_location` TEXT NOT NULL,
+	`image_extension` VARCHAR(25),
+	PRIMARY KEY (`id`)
+);
+CREATE TABLE `csaia_database`.`shared_flights` (
+	`user_id` BIGINT NOT NULL,
+	`flight_id` BIGINT NOT NULL,
+    FOREIGN KEY (`user_id`) REFERENCES users(`id`),
+    FOREIGN KEY (`flight_id`) REFERENCES flights(`id`)
 );

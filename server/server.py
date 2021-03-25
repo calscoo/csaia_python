@@ -4,8 +4,10 @@ from flask.helpers import send_file
 from datetime import datetime
 from flask_cors import CORS
 import os, sys
+from enums.privacy import privacy as privacy_enum
 
 # allows the script to access other python files in the repo
+
 sys.path.append('../')
 
 # external scripts must be imported after the previous line
@@ -35,6 +37,9 @@ multiple query parameters obtained through the request parameters
 @app.route('/query')
 def query_image():
     # unpack request parameters
+    calling_user_id_str = request.args.get('calling_user_id')
+    calling_user_id = int(str(calling_user_id_str).split(','))
+
     image_ids = request.args.get('image_ids')
     if (image_ids == 'null'):
         image_ids = None
@@ -105,7 +110,7 @@ def query_image():
         model = None
 
     # get file path from database
-    results = managers.image_manager.fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
+    results = managers.image_manager.fetch_images(calling_user_id, image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
 
     return_object = {
         'objects' : []
@@ -125,6 +130,7 @@ def query_image():
 
     return jsonify(return_object)
 
+
 '''
 GET
 Sends the client a zipped file of images
@@ -136,6 +142,7 @@ def prepare_zip():
     clean_zipped()
 
     image_ids = request.args.get('image_ids')
+    calling_user_id = request.args.get('calling_user_id')
     if (image_ids == 'null'):
         image_ids = None
     else:
@@ -144,7 +151,7 @@ def prepare_zip():
         for i in range(0, len(image_ids)): 
             image_ids[i] = int(image_ids[i])
 
-    results = managers.image_manager.fetch_images(image_ids, None, None, None, None, None, None, None, None, None)
+    results = managers.image_manager.fetch_images(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None)
 
     # handle edge cases
     if (len(results) == 0):
@@ -174,9 +181,11 @@ def prepare_zip():
     # return send_file(zip_name, as_attachment=True)
     return jsonify(zip_name=os.path.basename(zip_name))
 
+
 @app.route('/download-zip/<name>')
 def download_zip(name):
     return send_file('zipped\\' + name, as_attachment=True)
+
 
 '''
 POST
@@ -194,6 +203,8 @@ def upload_file():
         notes = request.form['notes']
         field_name = request.form['field_name']
         crop = request.form['crop']
+        privacy_value = request.form['privacy']
+        shared_users = request.form['shared_users']
 
         # request.files contains all the files attached to the request
         for file in request.files.getlist('image'):
@@ -201,7 +212,7 @@ def upload_file():
             file.save(path)
 
         # build flight
-        managers.flight_manager.build_flight(os.path.abspath(directory_name), flight_name, notes, field_name, crop)
+        managers.flight_manager.build_flight(os.path.abspath(directory_name), flight_name, notes, field_name, crop, privacy_enum(privacy_value), shared_users)
         
         return jsonify(success=True)
 

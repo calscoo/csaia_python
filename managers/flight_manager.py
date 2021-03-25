@@ -1,7 +1,8 @@
 from daos import flight_dao
-from managers import image_manager
+from managers import image_manager, shared_flight_manager
 from objects.flight import flight
 from objects.flight_derived_metadata import flight_derived_metadata
+from enums.privacy import privacy as privacy_enum
 
 
 def calculate_derived_flight_metadata(images):
@@ -54,59 +55,62 @@ def calculate_derived_flight_metadata(images):
 
 
 def flights_rs_to_object_list(rs):
-    images = []
+    flights = []
     if rs is not None:
         for tuple in rs:
             if tuple is not None:
-                images.append(flight(tuple[0], tuple[1], tuple[2], tuple[3], tuple[4], tuple[5], tuple[6], tuple[7], tuple[8], tuple[9], tuple[10], tuple[11], tuple[12], tuple[13]))
-    return images
+                flights.append(flight(tuple[0], tuple[1], tuple[2], tuple[3], tuple[4], tuple[5], tuple[6], tuple[7], tuple[8], tuple[9], tuple[10], tuple[11], tuple[12], tuple[13], privacy_enum(tuple[14])))
+    return flights
 
 
-def build_flight(path, flight, notes, field, crop):
+def build_flight(path, flight_name, manual_notes, field_name, crop_name, privacy, shared_users):
     images = image_manager.parse_image_metadata(path)
     flight_metadata = calculate_derived_flight_metadata(images)
     user_id = None
-    flight_name = flight  # input("File name: ")
-    manual_notes = notes  # input("Notes: ")
     address = 'Test'  # Using google maps for this field
-    field_name = field  # input("Field: ")
-    crop_name = crop  # input("Crop: ")
-    '''
-    print(type(user_id), type(flight_name), type(manual_notes), type(address), type(field_name), type(crop_name),
-          type(average_latitude), type(average_longitude), type(average_altitude), type(flight_start_time), type(flight_end_time),
-          type(hardware_make), type(hardware_model))
-    '''
     flight_records = [(user_id, flight_name, manual_notes, address, field_name,
         crop_name, flight_metadata.average_latitude, flight_metadata.average_longitude, flight_metadata.average_altitude,
         flight_metadata.flight_start_time, flight_metadata.flight_end_time, flight_metadata.hardware_make,
-        flight_metadata.hardware_model)]
+        flight_metadata.hardware_model, privacy.value)]
 
     flight_id = flight_dao.insert_flights(flight_records)[0]
+
+    if privacy == privacy_enum.Shared:
+        shared_flight_manager.share_flight(flight_id, shared_users)
+
     for image in images:
         image.flight_id = flight_id
     ids = image_manager.upload_images(images)
-    return {
-        'flight-id' : flight_id,
-        'user-id' : user_id,
-        'flight-name' : flight_name,
-        'manual-notes' : manual_notes,
-        'address' : address,
-        'field-name' : field_name,
-        'crop-name' : crop_name,
-        'average-latitude' : flight_metadata.average_latitude,
-        'average-longitude' : flight_metadata.average_longitude,
-        'average-altitude' : flight_metadata.average_altitude,
-        'start-time' : flight_metadata.flight_start_time,
-        'end-time' : flight_metadata.flight_end_time,
-        'make' : flight_metadata.hardware_make,
-        'model' : flight_metadata.hardware_model,
-        'image_ids' : ids
-    }
+    # return {
+    #     'flight-id': flight_id,
+    #     'user-id': user_id,
+    #     'flight-name': flight_name,
+    #     'manual-notes': manual_notes,
+    #     'address': address,
+    #     'field-name': field_name,
+    #     'crop-name': crop_name,
+    #     'average-latitude': flight_metadata.average_latitude,
+    #     'average-longitude': flight_metadata.average_longitude,
+    #     'average-altitude': flight_metadata.average_altitude,
+    #     'start-time': flight_metadata.flight_start_time,
+    #     'end-time': flight_metadata.flight_end_time,
+    #     'make': flight_metadata.hardware_make,
+    #     'model': flight_metadata.hardware_model,
+    #     'image_ids': ids
+    # }
 
 
-def fetch_flights(flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model):
+def fetch_flights(calling_user_id, flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model):
     rs = flight_dao.select_flights('*', flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model)
-    return flights_rs_to_object_list(rs)
+    flights = flights_rs_to_object_list(rs)
+    for flight in flights:
+        if flight.privacy == privacy_enum.Private and flight.user_id != calling_user_id:
+            flights.remove(flight)
+        elif flight.privacy == privacy_enum.Shared:
+            shared_users = shared_flight_manager.fetch_shared_flight_users(flight.id)
+            if calling_user_id not in shared_users:
+                flights.remove(flight)
+    return flights
 
 
 def remove_flight(flight_id):

@@ -1,6 +1,6 @@
 import re
 
-from managers import flight_manager, image_manager, users_manager
+from managers import flight_manager, image_manager, users_manager, shared_flight_manager
 from objects.range import range
 
 image_directory = 'C:/Users/Zach Kunz/Documents/CCAST_CSAIA2/CREC_FieldsP1P2P3_P4P_200ft_05092018'
@@ -8,21 +8,33 @@ image_directory = 'C:/Users/Zach Kunz/Documents/CCAST_CSAIA2/CREC_FieldsP1P2P3_P
 # flight_manager.build_flight(image_directory,'Test1', 'Test1', 'Test1', 'Test1')
 # flight_manager.build_flight(image_directory,'Test2', 'Test2', 'Test2', 'Test2')
 # image_manager.remove_images([314, 315, 316, 317, 318, 319, 320, 321])
-users_manager.make_admin('JohnTest2@ThisIsATest.com', 'Passw0rd')
+# users_manager.make_admin('JohnTest2@ThisIsATest.com', 'Passw0rd')
 # users_manager.update_admin('JohnTest@ThisIsATest.com')
+# shared_flight_manager.share_flight(1666, [4, 5])
+# users = shared_flight_manager.fetch_shared_flight_users(1700)
+# print(users)
 
-# image_ids = None
-# user_ids = None
-# flight_ids = None
+image_ids = None
+user_ids = None
+flight_ids = [1666, 1667, 1668]
 # extensions = ['.png', '.jpg', '.tif']
 # datetime_range = range('2012-01-01 00:00:00', '2022-01-01 00:00:00')
 # latitude_range = range(44, 50)
 # longitude_range = range(-200, 200)
 # altitude_range = range(100, 1000)
-# make = None
-# model = None
+extensions = None
+datetime_range = None
+latitude_range = None
+longitude_range = None
+altitude_range = None
+make = None
+model = None
 # #
-# images = image_manager.fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
+images = image_manager.fetch_images(6, image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
+flight_ids_returned = set()
+for image in images:
+    flight_ids_returned.add(image.flight_id)
+print(flight_ids_returned)
 # for image in images:
 #     print(str(image))
 """

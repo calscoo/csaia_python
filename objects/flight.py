@@ -1,7 +1,7 @@
 class flight:
     def __init__(self, id, user_id, flight_name, manual_notes, address, field_name, crop_name, average_latitude,
                  average_longitude, average_altitude, flight_start_time, flight_end_time, hardware_make,
-                 hardware_model):
+                 hardware_model, privacy):
         self.id = id
         self.user_id = user_id
         self.flight_name = flight_name
@@ -16,6 +16,7 @@ class flight:
         self.flight_end_time = flight_end_time
         self.hardware_make = hardware_make
         self.hardware_model = hardware_model
+        self.privacy = privacy
 
     def _get_id(self):
         return self.id
@@ -101,6 +102,13 @@ class flight:
     def _set_hardware_model(self, hardware_model):
         self.hardware_model = hardware_model
 
+    def _get_privacy(self):
+        return self.privacy
+
+    def _set_privacy(self, privacy):
+        self.privacy = privacy
+
+
     def __str__(self):
         return \
             "flight: { id: " + str(self.id) + ", " + \
@@ -116,4 +124,5 @@ class flight:
             "flight_start_time: " + str(self.flight_start_time) + ", " + \
             "flight_end_time: " + str(self.flight_end_time) + ", " + \
             "hardware_make: " + str(self.hardware_make) + ", " + \
-            "hardware_model: " + str(self.hardware_model) + " }"
+            "hardware_model: " + str(self.hardware_model) + ", " + \
+            "privacy: " + str(self.privacy) + " }"

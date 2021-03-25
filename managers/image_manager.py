@@ -141,9 +141,21 @@ def upload_images(images):
     return image_dao.insert_images(images_to_insert)
 
 
-def fetch_images(image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
+def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
     rs = image_dao.select_images('*', image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
-    return images_rs_to_object_list(rs)
+    images = images_rs_to_object_list(rs)
+    requested_flight_ids = set()
+    for image in images:
+        requested_flight_ids.add(image.flight_id)
+    allowed_flights = flight_manager.fetch_flights(calling_user_id, requested_flight_ids, None, None, None, None, None, None, None, None, None, None, None, None, None)
+    allowed_flight_ids = set()
+    for allowed_flight in allowed_flights:
+        allowed_flight_ids.add(allowed_flight.id)
+    return_images = []
+    for image in images:
+        if image.flight_id in allowed_flight_ids:
+            return_images.append(image)
+    return return_images
 
 
 def remove_images(image_ids):
