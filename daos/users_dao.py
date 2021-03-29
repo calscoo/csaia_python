@@ -1,5 +1,6 @@
 from pypika import Query, Table
 from daos.tools import dao_tools
+import mysql.connector
 
 insert_users_query = """ 
 INSERT INTO users(email, password, role) 
@@ -15,13 +16,12 @@ def insert_users(users_records):
     return dao_tools.execute(insert_users_query, users_records)
 
 def update_users(email, role):
-    objects = select_users('id', email, None, None)
-    objects.append([role, email])
-    # print(objects)
-    return dao_tools.execute(update_users_query, objects)
+    users = Table('users')
+    update_query = Query.update(users).set(users.role, role).where(users.email == email)
+    dao_tools.execute(update_query)
 
 
-def select_users(select_columns, user_id, email, password, role):
+def select_users(select_columns, email, password, role):
     users = Table('users')
     select_users_query = Query.from_(users).select('*' if select_columns is None else select_columns)
     if email is not None:
@@ -30,7 +30,7 @@ def select_users(select_columns, user_id, email, password, role):
         select_users_query = select_users_query.where(users.password.like('%' + password + '%'))
     if role is not None:
         select_users_query = select_users_query.where(users.role.isin(role))
-    return dao_tools.execute(select_users_query.get_sql(quote_char=None))
+    return dao_tools.execute(select_users_query)
 
 def select_all_users(select_columns):
     select_users(select_columns, None, None, None)

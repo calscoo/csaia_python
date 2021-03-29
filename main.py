@@ -8,12 +8,15 @@ image_directory = 'C:/Users/Zach Kunz/Documents/CCAST_CSAIA2/CREC_FieldsP1P2P3_P
 # flight_manager.build_flight(image_directory,'Test1', 'Test1', 'Test1', 'Test1')
 # flight_manager.build_flight(image_directory,'Test2', 'Test2', 'Test2', 'Test2')
 # image_manager.remove_images([314, 315, 316, 317, 318, 319, 320, 321])
-# users_manager.make_admin('JohnTest2@ThisIsATest.com', 'Passw0rd')
+# users_manager.make_admin('JohnTestAdmin@ThisIsATest.com', 'Passw0rd')
+users_manager.reinstate_user('JohnTestAdmin@ThisIsATest.com')
 # users_manager.update_admin('JohnTest@ThisIsATest.com')
 # shared_flight_manager.share_flight(1666, [4, 5])
 # users = shared_flight_manager.fetch_shared_flight_users(1700)
 # print(users)
 
+
+"""
 image_ids = None
 user_ids = None
 flight_ids = [1666, 1667, 1668]
@@ -37,6 +40,7 @@ for image in images:
 print(flight_ids_returned)
 # for image in images:
 #     print(str(image))
+"""
 """
 test = "this/is/a/string/directory/of/foo/bar/goodness/butt/cheese/accident"
 parts = test.split('/')[-4:]
