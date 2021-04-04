@@ -23,6 +23,8 @@ def calculate_derived_flight_metadata(images):
     """
     lat_count, lat_total, lon_count, lon_total, alt_count, alt_total = 0, 0, 0, 0, 0, 0
     times = []
+    start_time = None
+    end_time = None
     make, model = None, None
     for image in images:
         make = image.hardware_make if image.hardware_make is not None else make
@@ -49,8 +51,9 @@ def calculate_derived_flight_metadata(images):
     average_longitude = None if lon_count == 0 else lon_total / lon_count
     average_altitude = None if alt_count == 0 else alt_total / alt_count
     times.sort()
-    start_time = times[0]
-    end_time = times[-1]
+    if times.__len__() > 0:
+        start_time = times[0]
+        end_time = times[-1]
     return flight_derived_metadata(average_latitude, average_longitude, average_altitude, start_time, end_time, make, model)
 
 
