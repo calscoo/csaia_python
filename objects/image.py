@@ -1,5 +1,5 @@
 class image:
-    def __init__(self, id, user_id, flight_id, directory_location, image_extension, datetime, latitude, longitude, altitude, image_width, image_height, exposure_time, f_number, iso_speed, metering_mode, light_source, focal_length, exposure_mode, white_balance, gain_control, contrast, saturation, sharpness, image_compression, exif_version, software_version, hardware_make, hardware_model, hardware_serial_number):
+    def __init__(self, id, user_id, flight_id, directory_location, image_extension, datetime, latitude, longitude, altitude, image_width, image_height, exposure_time, f_number, iso_speed, metering_mode, light_source, focal_length, exposure_mode, white_balance, gain_control, contrast, saturation, sharpness, image_compression, exif_version, software_version, hardware_make, hardware_model, hardware_serial_number, md5_hash):
         self._set_id(id)
         self._set_user_id(user_id)
         self._set_flight_id(flight_id)
@@ -29,6 +29,7 @@ class image:
         self._set_hardware_make(hardware_make)
         self._set_hardware_model(hardware_model)
         self._set_hardware_serial_number(hardware_serial_number)
+        self._set_md5_hash(md5_hash)
 
     def _get_id(self):
         return self.id
@@ -204,6 +205,12 @@ class image:
     def _set_hardware_serial_number(self, hardware_serial_number):
         self.hardware_serial_number = hardware_serial_number
 
+    def _get_md5_hash(self):
+        return self.md5_hash
+
+    def _set_md5_hash(self, md5_hash):
+        self.md5_hash = md5_hash
+
     def __str__(self):
         return \
             "image: { id: " + str(self.id) + ", " + \
@@ -234,4 +241,5 @@ class image:
             "software_version: " + str(self.software_version) + ", " + \
             "hardware_make: " + str(self.hardware_make) + ", " + \
             "hardware_model: " + str(self.hardware_model) + ", " + \
-            "hardware_serial_number: " + str(self.hardware_serial_number) + " }"
+            "hardware_serial_number: " + str(self.hardware_serial_number) + ", " + \
+            "md5_hash: " + str(self.md5_hash) + " }"

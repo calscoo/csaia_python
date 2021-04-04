@@ -64,6 +64,7 @@ def update_flight(flight_derived_md, flight_id, flight_name):
         update_flight_query = update_flight_query.set(flights.hardware_make, flight_derived_md.hardware_make)
     if flight_derived_md.hardware_model is not None:
         update_flight_query = update_flight_query.set(flights.hardware_model, flight_derived_md.hardware_model)
+    update_flight_query = update_flight_query.set(flights.privacy, 1)
     return dao_tools.execute(update_flight_query.set(flights.flight_name, trim_name(flight_name)).where(flights.id.isin([flight_id])))
 
 
@@ -71,6 +72,6 @@ flight_info = flight_dao.select_all_flights('id, flight_name')
 for flight in flight_info:
     flight_id = flight[0]
     flight_name = flight[1]
-    flights_images = image_dao.select_images('*', None, None, [flight_id], None, None, None, None, None, None, None)
+    flights_images = image_dao.select_images('*', None, None, [flight_id], None, None, None, None, None, None, None, None, None)
     flight_derived_md = calculate_derived_flight_metadata(flights_images)
     update_flight(flight_derived_md, flight_id, flight_name)

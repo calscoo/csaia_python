@@ -4,7 +4,7 @@ CREATE TABLE `csaia_database`.`curate` (
 );
 
 INSERT INTO csaia_database.curate(`image_id`, `image_parent_location`) SELECT id, SUBSTRING_INDEX(directory_location, SUBSTRING_INDEX(directory_location, '/' ,-1), 1) AS flight_name FROM csaia_database.images;
-INSERT INTO csaia_database.flights(`flight_name`) SELECT DISTINCT SUBSTRING_INDEX(directory_location, SUBSTRING_INDEX(directory_location, '/' ,-1), 1) from csaia_database.images;
+INSERT INTO csaia_database.flights(`flight_name`, `privacy`) SELECT DISTINCT SUBSTRING_INDEX(directory_location, SUBSTRING_INDEX(directory_location, '/' ,-1), 1), 1 from csaia_database.images;
 
 CREATE TABLE `csaia_database`.`images_to_flight`
 SELECT csaia_database.images.id AS image_id, csaia_database.flights.id AS flight_id

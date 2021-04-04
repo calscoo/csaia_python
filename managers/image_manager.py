@@ -1,3 +1,4 @@
+import hashlib
 import os
 import re
 
@@ -35,7 +36,7 @@ def images_rs_to_object_list(rs):
     if rs is not None:
         for tuple in rs:
             if tuple is not None:
-                images.append(image(tuple[0], tuple[1], tuple[2], tuple[3], tuple[4], tuple[5], tuple[6], tuple[7], tuple[8], tuple[9], tuple[10], tuple[11], tuple[12], tuple[13], tuple[14], tuple[15], tuple[16], tuple[17], tuple[18], tuple[19], tuple[20], tuple[21], tuple[22], tuple[23], tuple[24], tuple[25], tuple[26], tuple[27], tuple[28]))
+                images.append(image(tuple[0], tuple[1], tuple[2], tuple[3], tuple[4], tuple[5], tuple[6], tuple[7], tuple[8], tuple[9], tuple[10], tuple[11], tuple[12], tuple[13], tuple[14], tuple[15], tuple[16], tuple[17], tuple[18], tuple[19], tuple[20], tuple[21], tuple[22], tuple[23], tuple[24], tuple[25], tuple[26], tuple[27], tuple[28], tuple[29]))
     return images
 
 
@@ -60,7 +61,7 @@ def image_objects_to_insert_tuple(list_images):
                               image.f_number, image.iso_speed, image.metering_mode, image.light_source, image.focal_length,
                               image.exposure_mode, image.white_balance, image.gain_control, image.contrast, image.saturation,
                               image.sharpness, image.image_compression, image.exif_version, image.software_version,
-                              image.hardware_make, image.hardware_model, image.hardware_serial_number))
+                              image.hardware_make, image.hardware_model, image.hardware_serial_number, image.md5_hash))
     return tuple_images
 
 
@@ -84,7 +85,8 @@ def parse_image_metadata(image_dir):
             path = os.path.join(root, file)
             if path.lower().endswith(supported_formats):
                 try:
-                    tags = exifread.process_file(open(path, 'rb'))
+                    image_file = open(path, 'rb')
+                    tags = exifread.process_file(image_file)
                     gps_data = gpsphoto.getGPSData(path)
                 except:
                     raise RuntimeError('Failed to parse image metadata for: ' + str(path))
@@ -118,7 +120,10 @@ def parse_image_metadata(image_dir):
                     none_check_str(tags.get('EXIF ISOSpeed')) or none_check_str(tags.get('EXIF ISOSpeedRatings')))
                 exposure_mode = none_check_str(tags.get('EXIF ExposureProgram')) or none_check_str(
                     tags.get('EXIF ExposureMode'))
-                images.append(image(None, None, None, path, ext, date_time, latitude, longitude, altitude, image_width, image_height, exposure_time, f_number, iso_speed, metering_mode, focal_length, light_source, exposure_mode, white_balance, gain_control, contrast, saturation, sharpness, image_compression, exif_version, software_version, hardware_make, hardware_model, hardware_serial_number))
+
+                md5_hash = hashlib.md5(image_file.read()).hexdigest()
+
+                images.append(image(None, None, None, path, ext, date_time, latitude, longitude, altitude, image_width, image_height, exposure_time, f_number, iso_speed, metering_mode, focal_length, light_source, exposure_mode, white_balance, gain_control, contrast, saturation, sharpness, image_compression, exif_version, software_version, hardware_make, hardware_model, hardware_serial_number, md5_hash))
     return images
 
 
@@ -142,8 +147,8 @@ def upload_images(images):
     return image_dao.insert_images(images_to_insert)
 
 
-def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
-    rs = image_dao.select_images('*', image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
+def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash):
+    rs = image_dao.select_images('*', image_ids, user_ids, flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash)
     images = images_rs_to_object_list(rs)
     requested_flight_ids = set()
     for image in images:
@@ -155,6 +160,12 @@ def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, extensions, d
     return_images = []
     for image in images:
         if image.flight_id in allowed_flight_ids:
+            image_file = open(image.directory_location, 'rb')
+            actual_hash = hashlib.md5(image_file.read()).hexdigest()
+            try:
+                assert actual_hash == image.md5_hash
+            except:
+                raise AssertionError('MD5 Hash Does Not Match. Possible File Corruption.')
             return_images.append(image)
     return return_images
 
@@ -172,7 +183,7 @@ def remove_images(image_ids):
     """
     flight_ids = set()
     image_ids_to_delete = set()
-    images_to_delete = image_dao.select_images('id, flight_id', image_ids, None, None, None, None, None, None, None, None, None)
+    images_to_delete = image_dao.select_images('id, flight_id', image_ids, None, None, None, None, None, None, None, None, None, None, None)
     if images_to_delete is not None and len(images_to_delete) > 0:
         for image in images_to_delete:
             flight_ids.add(image[1])
@@ -180,7 +191,7 @@ def remove_images(image_ids):
         image_dao.delete_images(list(image_ids_to_delete))
         for flight_id in flight_ids:
             if flight_id is not None:
-                flight_remaining_images = image_dao.select_images('count(*)', None, None, [flight_id], None, None, None, None, None, None, None)[0][0]
+                flight_remaining_images = image_dao.select_images('count(*)', None, None, [flight_id], None, None, None, None, None, None, None, None, None)[0][0]
                 if flight_remaining_images == 0:
                     flight_manager.remove_flight(flight_id)
 

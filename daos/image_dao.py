@@ -9,14 +9,8 @@ longitude, altitude, image_width, image_height, exposure_time,
 f_number, iso_speed, metering_mode, focal_length, light_source, 
 exposure_mode, white_balance, gain_control, contrast, saturation, 
 sharpness, image_compression, exif_version, software_version, 
-hardware_make, hardware_model, hardware_serial_number)
-VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-"""
-
-update_image_flight_id_query = """
-UPDATE images
-SET flight_id = %s
-WHERE id IN (%s);
+hardware_make, hardware_model, hardware_serial_number, md5_hash)
+VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 """
 
 
@@ -24,7 +18,7 @@ def insert_images(image_records):
     return dao_tools.execute(insert_images_query, image_records)
 
 
-def select_images(select_columns, image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model):
+def select_images(select_columns, image_ids, user_ids, flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash):
     """
     General purpose image selection method built to cover a broad demand of queries.
     Every parameter can be None and list values can accept any number of elements including 0.
@@ -41,6 +35,8 @@ def select_images(select_columns, image_ids, user_ids, flight_ids, extensions, d
         The optional list of user ids
     flight_ids : list[int]
         The optional list of flight ids
+    directory_location : string
+        The location of the image
     extensions : list[str]
         The optional list of image format extensions
     datetime_range : objects.range
@@ -57,6 +53,8 @@ def select_images(select_columns, image_ids, user_ids, flight_ids, extensions, d
     model : str
         The optional hardware model
         NOTE: Uses a LIKE comparision, full hardware model is not necessary, case IN-sensitive
+    md5_hash : string
+        The hash of the image
 
     Returns
     -------
@@ -72,6 +70,8 @@ def select_images(select_columns, image_ids, user_ids, flight_ids, extensions, d
         select_image_query = select_image_query.where(images.user_id.isin(user_ids))
     if flight_ids is not None and len(flight_ids) > 0:
         select_image_query = select_image_query.where(images.flight_id.isin(flight_ids))
+    if directory_location is not None:
+        select_image_query = select_image_query.where(images.directory_location.isin([directory_location]))
     if extensions is not None and len(extensions) > 0:
         select_image_query = select_image_query.where(images.image_extension.isin(extensions))
     if datetime_range is not None:
@@ -86,6 +86,8 @@ def select_images(select_columns, image_ids, user_ids, flight_ids, extensions, d
         select_image_query = select_image_query.where(images.hardware_make.like('%' + make + '%'))
     if model is not None:
         select_image_query = select_image_query.where(images.hardware_model.like('%' + model + '%'))
+    if md5_hash is not None:
+        select_image_query = select_image_query.where(images.md5_hash.isin([md5_hash]))
     return dao_tools.execute(select_image_query)
 
 
@@ -106,7 +108,7 @@ def select_all_images(select_columns):
         Query results based on incoming parameters.
         NOTE: This will return None for queries that return no results.
     """
-    return select_images(select_columns, None, None, None, None, None, None, None, None, None, None)
+    return select_images(select_columns, None, None, None, None, None, None, None, None, None, None, None, None)
 
 
 def delete_images(image_ids):
