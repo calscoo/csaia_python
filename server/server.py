@@ -29,6 +29,11 @@ app.config['ENV'] = 'development'
 app.config['DEBUG'] = True
 app.config['TESTING'] = True
 
+
+def float_or_none(val):
+    return None if val is None else float(val)
+
+
 '''
 GET
 Sends the client a list of objects that match
@@ -127,9 +132,9 @@ def query_image():
             'flight_id': image.flight_id,
             'image_extension': image.image_extension,
             'datetime' : image.datetime,
-            'latitude': float(image.latitude),
-            'longitude': float(image.longitude),
-            'altitude': float(image.altitude)
+            'latitude': float_or_none(image.latitude),
+            'longitude': float_or_none(image.longitude),
+            'altitude': float_or_none(image.altitude)
         })
 
     return jsonify(return_object)
