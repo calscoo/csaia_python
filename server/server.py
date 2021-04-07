@@ -37,8 +37,12 @@ multiple query parameters obtained through the request parameters
 @app.route('/query')
 def query_image():
     # unpack request parameters
+    # TODO: This should never be null. Once user creation is implemented, remove this null check
     calling_user_id_str = request.args.get('calling_user_id')
-    calling_user_id = int(str(calling_user_id_str).split(','))
+    if (calling_user_id_str == 'null'):
+        calling_user_id = None
+    else:
+        calling_user_id = int(str(calling_user_id_str).split(','))
 
     image_ids = request.args.get('image_ids')
     if (image_ids == 'null'):
@@ -110,7 +114,7 @@ def query_image():
         model = None
 
     # get file path from database
-    results = managers.image_manager.fetch_images(calling_user_id, image_ids, user_ids, flight_ids, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model)
+    results = managers.image_manager.fetch_images(calling_user_id, image_ids, user_ids, flight_ids, None, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, None)
 
     return_object = {
         'objects' : []
@@ -196,14 +200,14 @@ def upload_file():
     if request.method == 'POST':
         cur_time = datetime.now().strftime(time_format)
         directory_name = 'uploaded/12345_' + cur_time
-        os.mkdir(directory_name)
+        os.makedirs(directory_name)
 
         # get flight-based request args
         flight_name = request.form['flight_name']
         notes = request.form['notes']
         field_name = request.form['field_name']
         crop = request.form['crop']
-        privacy_value = request.form['privacy']
+        privacy_value = request.form['privacy_value']
         shared_users = request.form['shared_users']
 
         # request.files contains all the files attached to the request
@@ -212,7 +216,7 @@ def upload_file():
             file.save(path)
 
         # build flight
-        managers.flight_manager.build_flight(os.path.abspath(directory_name), flight_name, notes, field_name, crop, privacy_enum(privacy_value), shared_users)
+        managers.flight_manager.build_flight(os.path.abspath(directory_name), flight_name, notes, field_name, crop, privacy_enum(int(privacy_value)), shared_users)
         
         return jsonify(success=True)
 

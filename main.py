@@ -1,11 +1,15 @@
+import os
 import re
 
+from enums.privacy import privacy
 from managers import flight_manager, image_manager, users_manager, shared_flight_manager
 from objects.range import range
 
-image_directory = 'C:/Users/Zach Kunz/Documents/CCAST_CSAIA2/CREC_FieldsP1P2P3_P4P_200ft_05092018'
+image_directory = 'C:/Users/Caleb/Downloads/csaia/CCAST_CSAIA2/CREC_FieldsP1P2P3_P4P_200ft_05092018'
 
-# flight_manager.build_flight(image_directory,'Test1', 'Test1', 'Test1', 'Test1')
+# flight_manager.build_flight(image_directory, 'Test1', 'Test1', 'Test1', 'Test1', privacy.Public, None)
+# print(image_manager.fetch_images(1, [5, 6, 7, 8], None, None, None, None, None, None, None, None, None, None, None))
+# cur_time = datetime.now().strftime(time_format)
 # flight_manager.build_flight(image_directory,'Test2', 'Test2', 'Test2', 'Test2')
 # image_manager.remove_images([314, 315, 316, 317, 318, 319, 320, 321])
 # users_manager.make_admin('JohnTestAdmin@ThisIsATest.com', 'Passw0rd')
@@ -15,7 +19,7 @@ image_directory = 'C:/Users/Zach Kunz/Documents/CCAST_CSAIA2/CREC_FieldsP1P2P3_P
 # users = shared_flight_manager.fetch_shared_flight_users(1700)
 # print(users)
 
-image_manager.image_data_to_csv(image_manager.parse_image_metadata(image_directory))
+# image_manager.image_data_to_csv(image_manager.parse_image_metadata(image_directory))
 
 
 """
