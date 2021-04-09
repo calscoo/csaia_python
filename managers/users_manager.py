@@ -1,34 +1,38 @@
 from daos import users_dao
+from enums.role import roles
 
 #Create user method
-def make_user(email, password):
-    users_record = []
-    setEmail = email
-    setPassword = password
-    role = 2 #Basic user
-    users_record.insert(0, (setEmail, setPassword, role))
-    users_dao.insert_users(users_record)
+from objects.user import user
 
-#Create Admin method
-def make_admin(email, password):
+
+def create_user(email, password, role):
     users_record = []
-    setEmail = email
-    setPassword = password
-    role = 1 #Admin user
-    users_record.insert(0, (setEmail, setPassword, role))
+    users_record.insert(0, (email, password, role.value))
     users_dao.insert_users(users_record)
 
 
-def update_admin(email):
-    role = 1
-    users_dao.update_users(email, role)
+def update_user_role(id, role):
+    users_dao.update_user(id, None, role.value)
 
 
-def disable_user(email):
-    role = 3
-    users_dao.update_users(email, role)
+# Fetch all users for admin view
+def fetch_all_users():
+    return users_rs_to_object_list(users_dao.select_all_users('*'))
 
-# Restore admin or disabled user to a normal user
-def reinstate_user(email):
-    role = 2
-    users_dao.update_users(email, role)
+
+# Fetch all users for admin view
+def fetch_users(id, email, password, role):
+    return users_rs_to_object_list(users_dao.select_users('*', id, email, password, None if role is None else role.value))
+
+
+def does_user_exist(email):
+    return fetch_users(None, email, None, None).__len__() > 0
+
+
+def users_rs_to_object_list(rs):
+    users = []
+    if rs is not None:
+        for tuple in rs:
+            if tuple is not None:
+                users.append(user(tuple[0], tuple[1], tuple[2], roles(int(str(tuple[3])))))
+    return users

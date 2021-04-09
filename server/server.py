@@ -7,12 +7,14 @@ import os, sys
 from enums.privacy import privacy as privacy_enum
 
 # allows the script to access other python files in the repo
+from enums.role import roles
 
 sys.path.append('../')
 
 # external scripts must be imported after the previous line
 import managers.image_manager
 import managers.flight_manager
+import managers.users_manager
 from objects import range as Range
 
 app = Flask(__name__)
@@ -138,6 +140,65 @@ def query_image():
         })
 
     return jsonify(return_object)
+
+
+'''
+GET
+Sends the client a list of user objects
+multiple query parameters obtained through the request parameters
+'''
+@app.route('/fetch-all-users')
+def fetch_all_users():
+
+    results = managers.users_manager.fetch_all_users()
+
+    return_object = {
+        'objects': []
+    }
+
+    for user in results:
+        return_object['objects'].append({
+            'id': user.id,
+            'email': user.email,
+            'role': user.role.value,
+        })
+
+    return jsonify(return_object)
+
+
+'''
+POST
+Allows the client to upload flights
+'''
+@app.route('/update-user-role', methods=['GET', 'POST'])
+def update_user_role():
+    if request.method == 'POST':
+
+        # get update request args
+        user_id = request.form['user_id']
+        role = request.form['role']
+
+        # update user
+        managers.users_manager.update_user_role(user_id, roles(int(str(role))))
+        return jsonify(success=True)
+
+
+'''
+POST
+Allows the client to upload flights
+'''
+@app.route('/create-user', methods=['GET', 'POST'])
+def create_user():
+    if request.method == 'POST':
+
+        # get create request args
+        email = request.form['email']
+        password = request.form['password']
+        role = request.form['role']
+
+        # create user
+        managers.users_manager.create_user(email, password, roles(int(str(role))))
+        return jsonify(success=True)
 
 
 '''

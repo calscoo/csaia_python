@@ -2,6 +2,7 @@ import os
 import re
 
 from enums.privacy import privacy
+from enums.role import roles
 from managers import flight_manager, image_manager, users_manager, shared_flight_manager
 from objects.range import range
 
@@ -20,6 +21,7 @@ image_directory = 'C:/Users/Caleb/Downloads/csaia/CCAST_CSAIA2/CREC_FieldsP1P2P3
 # print(users)
 
 # image_manager.image_data_to_csv(image_manager.parse_image_metadata(image_directory))
+users_manager.update_user_role(1, roles.Disabled)
 
 
 """
