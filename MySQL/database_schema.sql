@@ -6,6 +6,7 @@ CREATE TABLE `csaia_database`.`users` (
 	`email` VARCHAR(100) NOT NULL UNIQUE,
 	`password` VARCHAR(255) NOT NULL,
 	`role` TINYINT NOT NULL,
+	`api_key` VARCHAR(255),
 	PRIMARY KEY (`id`)
 );
 CREATE TABLE `csaia_database`.`flights` (

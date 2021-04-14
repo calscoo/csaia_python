@@ -4,6 +4,8 @@ from enums.role import roles
 #Create user method
 from objects.user import user
 
+import random
+import string
 
 def create_user(email, password, role):
     users_record = []
@@ -19,6 +21,30 @@ def fetch_user_role(id):
     if id is not None:
         return users_dao.select_users('role', id, None, None, None)[0][0]
 
+def fetch_user_api_key(id, password):
+    if id is not None and password is not None:
+        users = users_dao.select_users('api_key', id, None, password, None)
+
+        if len(users) == 0:
+            return None
+
+        return users[0][0]
+
+        
+def generate_user_api_key(id, password):
+    if id is not None and password is not None:
+        users = users_dao.select_users('api_key', id, None, password, None)
+
+        if len(users) == 0:
+            return None
+
+        api_key = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=20))
+
+        users_dao.update_user_api_key(id, password, api_key)
+
+        return api_key
+
+    return None
 
 # Fetch all users for admin view
 def fetch_all_users():

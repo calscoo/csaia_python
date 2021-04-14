@@ -4,14 +4,13 @@ from flask.helpers import send_file
 from datetime import datetime
 from flask_cors import CORS
 import os, sys
-from enums.privacy import privacy as privacy_enum
 
-# allows the script to access other python files in the repo
-from enums.role import roles
 
 sys.path.append('../')
 
 # external scripts must be imported after the previous line
+from enums.privacy import privacy as privacy_enum
+from enums.role import roles
 import managers.image_manager
 import managers.flight_manager
 import managers.users_manager
@@ -205,7 +204,7 @@ def login():
 
 '''
 GET
-Returns the users role
+Returns the user's role
 '''
 @app.route('/get-user-role')
 def get_user_role():
@@ -219,6 +218,40 @@ def get_user_role():
     }
 
     return jsonify(return_object)
+
+'''
+GET
+Returns the user's API key
+'''
+@app.route('/get-user-api-key')
+def get_user_api_key():
+
+    user_id = request.args.get('user_id')
+    password = request.args.get('password')
+
+    api_key = managers.users_manager.fetch_user_api_key(user_id, password)
+
+    if api_key is not None:
+        return jsonify({'api_key' : api_key})
+    
+    return jsonify(success=False)
+
+'''
+GET
+Generates a new API key for a user and returns it
+'''
+@app.route('/generate-user-api-key')
+def generate_user_api_key():
+
+    user_id = request.args.get('user_id')
+    password = request.args.get('password')
+
+    api_key = managers.users_manager.generate_user_api_key(user_id, password)
+
+    if api_key is not None:
+        return jsonify({'api_key' : api_key})
+
+    return jsonify(success=False)
 
 
 '''
