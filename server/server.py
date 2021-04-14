@@ -167,6 +167,61 @@ def fetch_all_users():
 
 
 '''
+GET
+Sends the client an email value to check if it exists in the system
+'''
+@app.route('/does-user-exist')
+def does_user_exist():
+
+    email = request.args.get('email')
+
+    result = managers.users_manager.does_user_exist(email)
+
+    return_object = {
+        'exists': result
+    }
+
+    return jsonify(return_object)
+
+
+'''
+GET
+Sends the client and email and password to attempt a login
+'''
+@app.route('/login')
+def login():
+
+    email = request.args.get('email')
+    password = request.args.get('password')
+
+    login_result = managers.users_manager.validate_login_credentials(email, password)
+
+    return_object = {
+        'login_result': login_result
+    }
+
+    return jsonify(return_object)
+
+
+'''
+GET
+Returns the users role
+'''
+@app.route('/get-user-role')
+def get_user_role():
+
+    user_id = request.args.get('user_id')
+
+    user_role = managers.users_manager.fetch_user_role(user_id)
+
+    return_object = {
+        'user_role': user_role
+    }
+
+    return jsonify(return_object)
+
+
+'''
 POST
 Allows the client to upload flights
 '''

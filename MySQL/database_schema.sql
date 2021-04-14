@@ -3,7 +3,7 @@ SET GLOBAL max_allowed_packet=1073741824;
 CREATE DATABASE `csaia_database`;
 CREATE TABLE `csaia_database`.`users` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT,
-	`email` VARCHAR(100) NOT NULL,
+	`email` VARCHAR(100) NOT NULL UNIQUE,
 	`password` VARCHAR(255) NOT NULL,
 	`role` TINYINT NOT NULL,
 	PRIMARY KEY (`id`)
