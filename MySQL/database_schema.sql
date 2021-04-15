@@ -1,6 +1,7 @@
 -- This schema represents our current db model and allows for ease of setup on new machines.
 SET GLOBAL max_allowed_packet=1073741824;
 CREATE DATABASE `csaia_database`;
+ALTER DATABASE csaia_database CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE TABLE `csaia_database`.`users` (
 	`id` BIGINT NOT NULL AUTO_INCREMENT,
 	`email` VARCHAR(100) NOT NULL UNIQUE,

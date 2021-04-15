@@ -232,7 +232,7 @@ def get_user_api_key():
     api_key = managers.users_manager.fetch_user_api_key(user_id, password)
 
     if api_key is not None:
-        return jsonify({'api_key' : api_key})
+        return jsonify({'api_key': api_key})
     
     return jsonify(success=False)
 
@@ -269,6 +269,27 @@ def update_user_role():
         # update user
         managers.users_manager.update_user_role(user_id, roles(int(str(role))))
         return jsonify(success=True)
+
+
+'''
+POST
+Allows the client to upload flights
+'''
+@app.route('/update-user-pass', methods=['GET', 'POST'])
+def update_user_pass():
+    if request.method == 'POST':
+
+        # get update request args
+        user_id = request.form['user_id']
+        old_pass = request.form['old_pass']
+        new_pass = request.form['new_pass']
+
+        # update user
+        result = managers.users_manager.update_user_pass(user_id, old_pass, new_pass)
+        return_object = {
+            'password_change_result': result
+        }
+        return jsonify(return_object)
 
 
 '''

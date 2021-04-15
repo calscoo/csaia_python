@@ -1,5 +1,6 @@
 from daos import users_dao
 from enums.role import roles
+from managers.tools import password_manager
 
 #Create user method
 from objects.user import user
@@ -9,7 +10,7 @@ import string
 
 def create_user(email, password, role):
     users_record = []
-    users_record.insert(0, (email, password, role.value))
+    users_record.insert(0, (email, password_manager.get_hashed_password(password), role.value))
     users_dao.insert_users(users_record)
 
 
@@ -17,9 +18,19 @@ def update_user_role(id, role):
     users_dao.update_user(id, None, role.value)
 
 
+def update_user_pass(id, old_pass, new_pass):
+    user = fetch_users(id, None, None, None)[0]
+    if user is not None and password_manager.check_password(old_pass, user.password):
+        users_dao.update_user(id, password_manager.get_hashed_password(new_pass).decode('utf-8'), None)
+        return True
+    else:
+        return False
+
+
 def fetch_user_role(id):
     if id is not None:
         return users_dao.select_users('role', id, None, None, None)[0][0]
+
 
 def fetch_user_api_key(id, password):
     if id is not None and password is not None:
@@ -46,6 +57,7 @@ def generate_user_api_key(id, password):
 
     return None
 
+
 # Fetch all users for admin view
 def fetch_all_users():
     return users_rs_to_object_list(users_dao.select_all_users('*'))
@@ -69,7 +81,7 @@ def validate_login_credentials(email, password):
         return -1
     user = users[0]
     # If provided password doesn't match or the user is disabled, fail login
-    if user.password != password or user.role == roles.Disabled:
+    if not password_manager.check_password(password, user.password) or user.role == roles.Disabled:
         return -1
     return user.id
 

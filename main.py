@@ -21,7 +21,8 @@ image_directory = 'C:/Users/Caleb/Downloads/csaia/CCAST_CSAIA2/CREC_FieldsP1P2P3
 # print(users)
 
 # image_manager.image_data_to_csv(image_manager.parse_image_metadata(image_directory))
-print(users_manager.fetch_user_role(5))
+# print(users_manager.fetch_user_role(5))
+users_manager.create_user("user", "pass", roles.Admin)
 
 
 """

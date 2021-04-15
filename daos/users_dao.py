@@ -20,13 +20,14 @@ def insert_users(users_records):
 def update_user(id, password, role):
     if id is not None and (password is not None or role is not None):
         users = Table('users')
-        select_user_query = Query.update(users)
+        update_user_query = Query.update(users)
         if password is not None:
-            select_user_query = select_user_query.set(users.password, password)
+            update_user_query = update_user_query.set(users.password, password)
         if role is not None:
-            select_user_query = select_user_query.set(users.role, role)
-        select_user_query = select_user_query.where(users.id.isin([id]))
-        dao_tools.execute(select_user_query)
+            update_user_query = update_user_query.set(users.role, role)
+        update_user_query = update_user_query.where(users.id.isin([id]))
+        print(update_user_query)
+        dao_tools.execute(update_user_query)
 
 def update_user_api_key(id, password, api_key):
     if id is not None and (password is not None or api_key is not None):
