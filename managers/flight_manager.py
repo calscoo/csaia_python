@@ -1,3 +1,5 @@
+import csv
+from geopy.geocoders import Nominatim
 from daos import flight_dao
 from managers import image_manager, shared_flight_manager
 from objects.flight import flight
@@ -70,7 +72,7 @@ def build_flight(path, flight_name, manual_notes, field_name, crop_name, privacy
     images = image_manager.parse_image_metadata(path)
     flight_metadata = calculate_derived_flight_metadata(images)
     user_id = None
-    address = 'Test'  # Using google maps for this field
+    address = flight_address(flight_metadata.average_latitude, flight_metadata.average_longitude)
     flight_records = [(user_id, flight_name, manual_notes, address, field_name,
         crop_name, flight_metadata.average_latitude, flight_metadata.average_longitude, flight_metadata.average_altitude,
         flight_metadata.flight_start_time, flight_metadata.flight_end_time, flight_metadata.hardware_make,
@@ -130,3 +132,24 @@ def remove_flight(flight_id):
     flight_to_delete = flight_dao.select_flights('id', [flight_id], None, None, None, None, None, None, None, None, None, None, None, None, None)
     flight_id_to_delete = None if len(flight_to_delete) == 0 else flight_to_delete[0][0]
     flight_dao.delete_flight(flight_id_to_delete)
+
+def flight_data_to_tuple(flight):
+    tuple_flights = []
+    for f in flight:
+        tuple_flights.append((f.id, f.user_id, f.flight_name, f.manual_notes, f.address, f.field_name, f.crop_name, str(f.average_latitude), str(f.average_longitude), str(f.average_altitude), str(f.flight_start_time), str(f.flight_end_time), f.hardware_make, f.hardware_model, str(f.privacy)))
+    return tuple_flights
+
+def flight_data_to_csv(file_name, flight_id):
+    flights = fetch_flights(flight_id, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
+    flight_to_insert = flight_data_to_tuple(flights)
+    with open('CSV_Files/{}.csv'.format(file_name),'w', newline='') as out:
+        csv_out=csv.writer(out)
+        csv_out.writerow(['flight_id','user_id','flight_name','manual_notes','address','field_name','crop_name','average_latitude','average_longitude','average_altitude','start_time'
+        ,'end_time','hardware_make','hardware_model','privacy'])
+        csv_out.writerow(flight_to_insert)
+
+def flight_address(latitude, longitude):
+    address_coordinates = "{}, {}".format(latitude, longitude)
+    geolocator = Nominatim(user_agent = "CSAIA")
+    location = geolocator.reverse(address_coordinates)
+    return location.address

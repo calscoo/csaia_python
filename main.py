@@ -6,12 +6,12 @@ from enums.role import roles
 from managers import flight_manager, image_manager, users_manager, shared_flight_manager
 from objects.range import range
 
-image_directory = 'C:/Users/Caleb/Downloads/csaia/CCAST_CSAIA2/CREC_FieldsP1P2P3_P4P_200ft_05092018'
+image_directory = 'C:/Users/Zach Kunz/Documents/CCAST_CSAIA2/CREC_FieldsP1P2P3_P4P_200ft_05092018'
 
 # flight_manager.build_flight(image_directory, 'Test1', 'Test1', 'Test1', 'Test1', privacy.Public, None)
 # print(image_manager.fetch_images(1, [5, 6, 7, 8], None, None, None, None, None, None, None, None, None, None, None))
 # cur_time = datetime.now().strftime(time_format)
-# flight_manager.build_flight(image_directory,'Test2', 'Test2', 'Test2', 'Test2')
+#flight_manager.build_flight(image_directory,'Test2', 'Test2', 'Test2', 'Test2', privacy.Public, None)
 # image_manager.remove_images([314, 315, 316, 317, 318, 319, 320, 321])
 # users_manager.make_admin('JohnTestAdmin@ThisIsATest.com', 'Passw0rd')
 # users_manager.reinstate_user('JohnTestAdmin@ThisIsATest.com')
@@ -20,9 +20,15 @@ image_directory = 'C:/Users/Caleb/Downloads/csaia/CCAST_CSAIA2/CREC_FieldsP1P2P3
 # users = shared_flight_manager.fetch_shared_flight_users(1700)
 # print(users)
 
+# flight_manager.flight_data_to_csv("newCSVFileTEST", 3)
+
+#print(flight_manager.flight_address(47.5092567242, -99.1327862666))
+
 # image_manager.image_data_to_csv(image_manager.parse_image_metadata(image_directory))
+
 # print(users_manager.fetch_user_role(5))
 users_manager.create_user("user", "pass", roles.Admin)
+
 
 
 """
