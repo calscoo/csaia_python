@@ -19,3 +19,11 @@ def fetch_shared_flight_users(flight_id):
         if tuple is not None:
             user_ids.append(tuple[0])
     return user_ids
+
+def fetch_users_shared_flights(user_id):
+    rs = shared_flight_dao.select_users_shared_flights(user_id)
+    flight_ids = []
+    for tuple in rs:
+        if tuple is not None:
+            flight_ids.append(tuple[1])
+    return flight_ids

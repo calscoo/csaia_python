@@ -253,7 +253,62 @@ def generate_user_api_key():
 
     return jsonify(success=False)
 
+'''
+GET
+Sends the client a list of their own flights.
+user_id is determined by the calling_user_id
+request parameter.
+'''
+@app.route('/get-users-flights')
+def get_users_flights():
+    calling_user_id = request.args.get('calling_user_id')
+    results = managers.image_manager.fetch_images(calling_user_id, None, None, None, None, None, None, None, None, None, None, None, None)
 
+    return_object = {
+        'objects' : []
+    }
+
+    for image in results:
+        return_object['objects'].append({
+            'id': image.id,
+            'flight_id': image.flight_id,
+            'image_extension': image.image_extension,
+            'datetime' : image.datetime,
+            'latitude': float_or_none(image.latitude),
+            'longitude': float_or_none(image.longitude),
+            'altitude': float_or_none(image.altitude)
+        })
+
+    return jsonify(return_object)
+
+'''
+GET
+Sends the client a list flights that are shared
+with them. user_id is obtained from
+the request parameter calling_user_id.
+'''
+@app.route('/get-users-shared-flights')
+def get_users_shared_flights():
+    calling_user_id = request.args.get('calling_user_id')
+    results = managers.shared_flight_manager.fetch_users_shared_flights(calling_user_id)
+
+    return_object = {
+        'objects' : []
+    }
+
+    for image in results:
+        return_object['objects'].append({
+            'id': image.id,
+            'user_id': image.user_id,
+            'flight_id': image.flight_id,
+            'image_extension': image.image_extension,
+            'datetime' : image.datetime,
+            'latitude': float_or_none(image.latitude),
+            'longitude': float_or_none(image.longitude),
+            'altitude': float_or_none(image.altitude)
+        })
+
+    return jsonify(return_object)
 '''
 POST
 Allows the client to upload flights
@@ -365,6 +420,71 @@ def prepare_zip():
 def download_zip(name):
     return send_file('zipped\\' + name, as_attachment=True)
 
+'''
+GET
+Sends the client a csv file of metadata from
+the selected images.
+Images are fetched via "image_ids" request argument
+'''
+@app.route('/prepare-csv')
+def prepare_csv():
+    # process to remove any old csv files in the csv folder
+    clean_csv()
+
+    image_ids = request.args.get('image_ids')
+    calling_user_id = request.args.get('calling_user_id')
+    if (image_ids == 'null'):
+        image_ids = None
+    else:
+        image_ids = str(image_ids).split(',')
+
+        for i in range(0, len(image_ids)): 
+            image_ids[i] = int(image_ids[i])
+
+    results = managers.image_manager.fetch_images(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None)
+
+    # handle edge cases
+    if (len(results) == 0):
+        return jsonify(count=0)
+
+    if (len(results) > 50):
+        return jsonify(message='Query too broad')
+
+    # make a new temp folder for the csv file
+    cur_time = datetime.now().strftime(time_format)
+    directory_name = 'CSV_Files/12345_' + cur_time
+    file_name = '12345_' + cur_time
+    csv_name = directory_name + '.csv'
+    os.mkdir(directory_name)
+    managers.image_manager.image_data_to_csv(file_name, results)
+
+    # send csv over to user
+    # return send_file(zip_name, as_attachment=True)
+    return jsonify(csv_name=os.path.basename(csv_name))
+
+
+@app.route('/download-csv/<name>')
+def download_csv(name):
+    return send_file('CSV_Files\\' + name, as_attachment=True)
+
+'''
+Method to keep server files to a miniumum
+
+Deletes all files in the csv folder that
+were made more than 10 seconds ago
+'''
+def clean_csv():
+    for filename in os.listdir('CSV_Files'):
+        # parse out the time this file was created via name
+        timestamp = filename.split('_')[1].split('.csv')[0]
+        time = datetime.strptime(timestamp, time_format)
+
+        # get age of this file in seconds
+        time_difference = (datetime.now() - time).seconds
+
+        # remove file if it's more than 10 seconds old
+        if time_difference > 10:
+            os.remove('CSV_Files/' + filename)
 
 '''
 POST
