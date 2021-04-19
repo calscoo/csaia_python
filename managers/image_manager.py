@@ -198,10 +198,11 @@ def remove_images(image_ids):
                 if flight_remaining_images == 0:
                     flight_manager.remove_flight(flight_id)
 
+
 def image_data_to_csv(file_name, images):
     images_to_insert = image_objects_to_insert_tuple(images)
     with open('CSV_Files/{}.csv'.format(file_name),'w', newline='') as out:
-        csv_out=csv.writer(out)
+        csv_out = csv.writer(out)
         csv_out.writerow(['id','flight_id','directory_location','image_extension','datetime','latitude','longitude','altitude','width','height','exposure_time'
         ,'f_number','iso_speed','metering_mode','light_source','focal_legnth','exposure_mode','white_balance','gain_control','contrast','saturation'
         ,'sharpness','image_compression','exif_version','software_version','hardware_make','hardware_model','hardware_serial_number'])

@@ -309,9 +309,10 @@ def get_users_shared_flights():
         })
 
     return jsonify(return_object)
+
 '''
 POST
-Allows the client to upload flights
+Allows the admin to update a users role
 '''
 @app.route('/update-user-role', methods=['GET', 'POST'])
 def update_user_role():
@@ -328,7 +329,7 @@ def update_user_role():
 
 '''
 POST
-Allows the client to upload flights
+Allows the admin to update a users password
 '''
 @app.route('/update-user-pass', methods=['GET', 'POST'])
 def update_user_pass():
@@ -349,7 +350,7 @@ def update_user_pass():
 
 '''
 POST
-Allows the client to upload flights
+Allows the admin to create a user
 '''
 @app.route('/create-user', methods=['GET', 'POST'])
 def create_user():
@@ -385,7 +386,7 @@ def prepare_zip():
         for i in range(0, len(image_ids)): 
             image_ids[i] = int(image_ids[i])
 
-    results = managers.image_manager.fetch_images(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None)
+    results = managers.image_manager.fetch_images(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None, None, None)
 
     # handle edge cases
     if (len(results) == 0):
@@ -398,7 +399,7 @@ def prepare_zip():
     cur_time = datetime.now().strftime(time_format)
     directory_name = 'zipped/12345_' + cur_time
     zip_name = directory_name + '.zip'
-    os.mkdir(directory_name)
+    os.makedirs(directory_name)
 
     # add image results to file
     for image in results:
@@ -441,7 +442,7 @@ def prepare_csv():
         for i in range(0, len(image_ids)): 
             image_ids[i] = int(image_ids[i])
 
-    results = managers.image_manager.fetch_images(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None)
+    results = managers.image_manager.fetch_images(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None, None, None)
 
     # handle edge cases
     if (len(results) == 0):
@@ -455,7 +456,6 @@ def prepare_csv():
     directory_name = 'CSV_Files/12345_' + cur_time
     file_name = '12345_' + cur_time
     csv_name = directory_name + '.csv'
-    os.mkdir(directory_name)
     managers.image_manager.image_data_to_csv(file_name, results)
 
     # send csv over to user
@@ -515,6 +515,7 @@ def upload_file():
         
         return jsonify(success=True)
 
+
 '''
 Method to keep server files to a miniumum
 
@@ -533,6 +534,7 @@ def clean_zipped():
         # remove file if it's more than 10 seconds old
         if time_difference > 10:
             os.remove('zipped/' + filename)
+
 
 if __name__ == '__main__':
    app.run()
