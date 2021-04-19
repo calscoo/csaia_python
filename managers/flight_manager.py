@@ -143,15 +143,15 @@ def flight_data_to_tuple(flight):
         tuple_flights.append((f.id, f.user_id, f.flight_name, f.manual_notes, f.address, f.field_name, f.crop_name, str(f.average_latitude), str(f.average_longitude), str(f.average_altitude), str(f.flight_start_time), str(f.flight_end_time), f.hardware_make, f.hardware_model, str(f.privacy)))
     return tuple_flights
 
-
-def flight_data_to_csv(file_name, flight_id):
-    flights = fetch_flights(flight_id, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
+def flight_data_to_csv(file_name, flight_name):
+    flights = fetch_flights(None, None, None, flight_name, None, None, None, None, None, None, None, None, None, None, None)
     flight_to_insert = flight_data_to_tuple(flights)
     with open('CSV_Files/{}.csv'.format(file_name),'w', newline='') as out:
         csv_out=csv.writer(out)
         csv_out.writerow(['flight_id','user_id','flight_name','manual_notes','address','field_name','crop_name','average_latitude','average_longitude','average_altitude','start_time'
         ,'end_time','hardware_make','hardware_model','privacy'])
-        csv_out.writerow(flight_to_insert)
+        for row in flight_to_insert:
+            csv_out.writerow(row)
 
 
 def flight_address(latitude, longitude):
