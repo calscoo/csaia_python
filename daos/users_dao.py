@@ -26,7 +26,6 @@ def update_user(id, password, role):
         if role is not None:
             update_user_query = update_user_query.set(users.role, role)
         update_user_query = update_user_query.where(users.id.isin([id]))
-        print(update_user_query)
         dao_tools.execute(update_user_query)
 
 def update_user_api_key(id, password, api_key):

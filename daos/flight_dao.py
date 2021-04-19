@@ -125,3 +125,39 @@ def delete_flight(flight_id):
         flights = Table('flights')
         delete_flight_query = Query.from_(flights).delete().where(flights.id.isin([flight_id]))
         dao_tools.execute(delete_flight_query)
+
+
+def update_flight(id, flight):
+    if id is not None and flight is not None:
+        flights = Table('flights')
+        update_flight_query = Query.update(flights)
+        if flight.user_id is not None:
+            update_flight_query = update_flight_query.set(flights.user_id, flight.user_id)
+        if flight.flight_name is not None:
+            update_flight_query = update_flight_query.set(flights.flight_name, flight.flight_name)
+        if flight.manual_notes is not None:
+            update_flight_query = update_flight_query.set(flights.manual_notes, flight.manual_notes)
+        if flight.address is not None:
+            update_flight_query = update_flight_query.set(flights.address, flight.address)
+        if flight.field_name is not None:
+            update_flight_query = update_flight_query.set(flights.field_name, flight.field_name)
+        if flight.crop_name is not None:
+            update_flight_query = update_flight_query.set(flights.crop_name, flight.crop_name)
+        if flight.average_latitude is not None:
+            update_flight_query = update_flight_query.set(flights.average_latitude, flight.average_latitude)
+        if flight.average_longitude is not None:
+            update_flight_query = update_flight_query.set(flights.average_longitude, flight.average_longitude)
+        if flight.average_altitude is not None:
+            update_flight_query = update_flight_query.set(flights.average_altitude, flight.average_altitude)
+        if flight.flight_start_time is not None:
+            update_flight_query = update_flight_query.set(flights.flight_start_time, flight.flight_start_time)
+        if flight.flight_end_time is not None:
+            update_flight_query = update_flight_query.set(flights.flight_end_time, flight.flight_end_time)
+        if flight.hardware_make is not None:
+            update_flight_query = update_flight_query.set(flights.hardware_make, flight.hardware_make)
+        if flight.hardware_model is not None:
+            update_flight_query = update_flight_query.set(flights.hardware_model, flight.hardware_model)
+        if flight.privacy is not None:
+            update_flight_query = update_flight_query.set(flights.privacy, flight.privacy)
+        update_flight_query = update_flight_query.where(flights.id.isin([id]))
+        dao_tools.execute(update_flight_query)

@@ -52,6 +52,9 @@ def calculate_derived_flight_metadata(images):
     average_latitude = None if lat_count == 0 else lat_total / lat_count
     average_longitude = None if lon_count == 0 else lon_total / lon_count
     average_altitude = None if alt_count == 0 else alt_total / alt_count
+    average_latitude = None if average_latitude == 0 else average_latitude
+    average_longitude = None if average_longitude == 0 else average_longitude
+    average_altitude = None if average_altitude == 0 else average_altitude
     times.sort()
     if times.__len__() > 0:
         start_time = times[0]
