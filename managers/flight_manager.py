@@ -133,11 +133,13 @@ def remove_flight(flight_id):
     flight_id_to_delete = None if len(flight_to_delete) == 0 else flight_to_delete[0][0]
     flight_dao.delete_flight(flight_id_to_delete)
 
+
 def flight_data_to_tuple(flight):
     tuple_flights = []
     for f in flight:
         tuple_flights.append((f.id, f.user_id, f.flight_name, f.manual_notes, f.address, f.field_name, f.crop_name, str(f.average_latitude), str(f.average_longitude), str(f.average_altitude), str(f.flight_start_time), str(f.flight_end_time), f.hardware_make, f.hardware_model, str(f.privacy)))
     return tuple_flights
+
 
 def flight_data_to_csv(file_name, flight_id):
     flights = fetch_flights(flight_id, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
@@ -148,8 +150,12 @@ def flight_data_to_csv(file_name, flight_id):
         ,'end_time','hardware_make','hardware_model','privacy'])
         csv_out.writerow(flight_to_insert)
 
+
 def flight_address(latitude, longitude):
-    address_coordinates = "{}, {}".format(latitude, longitude)
-    geolocator = Nominatim(user_agent = "CSAIA")
-    location = geolocator.reverse(address_coordinates)
-    return location.address
+    address = None
+    if latitude is not None and longitude is not None:
+        address_coordinates = "{}, {}".format(latitude, longitude)
+        geo_locator = Nominatim(user_agent = "CSAIA")
+        location = geo_locator.reverse(address_coordinates)
+        address = location.address
+    return address
