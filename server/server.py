@@ -3,6 +3,7 @@ from flask import Flask, json, jsonify, request
 from flask.helpers import send_file
 from datetime import datetime
 from flask_cors import CORS
+from managers import shared_flight_manager, image_manager
 import os, sys
 
 
@@ -14,7 +15,7 @@ from enums.role import roles
 import managers.image_manager
 import managers.flight_manager
 import managers.users_manager
-from objects import range as Range
+from objects.range import range as Range
 
 app = Flask(__name__)
 
@@ -43,12 +44,7 @@ multiple query parameters obtained through the request parameters
 @app.route('/query')
 def query_image():
     # unpack request parameters
-    # TODO: This should never be null. Once user creation is implemented, remove this null check
-    calling_user_id_str = request.args.get('calling_user_id')
-    if (calling_user_id_str == 'null'):
-        calling_user_id = None
-    else:
-        calling_user_id = int(str(calling_user_id_str).split(','))
+    calling_user_id = str(request.args.get('calling_user_id'))
 
     image_ids = request.args.get('image_ids')
     if (image_ids == 'null'):
@@ -88,7 +84,7 @@ def query_image():
         datetime_range = None
     else:
         times = str(datetime_range).split(',')
-        datetime_range = range(times[0], times[1])
+        datetime_range = Range(times[0], times[1])
 
     latitude_range = request.args.get('latitude_range')
     if (latitude_range == 'null'):
@@ -193,10 +189,14 @@ def login():
     email = request.args.get('email')
     password = request.args.get('password')
 
-    login_result = managers.users_manager.validate_login_credentials(email, password)
+    user_id = managers.users_manager.validate_login_credentials(email, password)
+    force_reset = 0
+    if user_id is not -1:
+        force_reset = managers.users_manager.check_force_password_reset(user_id)
 
     return_object = {
-        'login_result': login_result
+        'login_result': user_id,
+        'force_reset': force_reset
     }
 
     return jsonify(return_object)
@@ -262,10 +262,10 @@ request parameter.
 @app.route('/get-users-flights')
 def get_users_flights():
     calling_user_id = request.args.get('calling_user_id')
-    results = managers.image_manager.fetch_images(calling_user_id, None, None, None, None, None, None, None, None, None, None, None, None)
+    results = managers.image_manager.fetch_images(calling_user_id, None, [calling_user_id], None, None, None, None, None, None, None, None, None, None)
 
     return_object = {
-        'objects' : []
+        'objects': []
     }
 
     for image in results:
@@ -273,7 +273,7 @@ def get_users_flights():
             'id': image.id,
             'flight_id': image.flight_id,
             'image_extension': image.image_extension,
-            'datetime' : image.datetime,
+            'datetime': image.datetime,
             'latitude': float_or_none(image.latitude),
             'longitude': float_or_none(image.longitude),
             'altitude': float_or_none(image.altitude)
@@ -290,13 +290,14 @@ the request parameter calling_user_id.
 @app.route('/get-users-shared-flights')
 def get_users_shared_flights():
     calling_user_id = request.args.get('calling_user_id')
-    results = managers.shared_flight_manager.fetch_users_shared_flights(calling_user_id)
+    flight_ids = shared_flight_manager.fetch_users_shared_flight_ids(calling_user_id)
+    images = image_manager.fetch_images(calling_user_id, None, None, flight_ids, None, None, None, None, None, None, None, None, None)
 
     return_object = {
-        'objects' : []
+        'objects': []
     }
 
-    for image in results:
+    for image in images:
         return_object['objects'].append({
             'id': image.id,
             'user_id': image.user_id,
@@ -329,10 +330,30 @@ def update_user_role():
 
 '''
 POST
-Allows the admin to update a users password
+Allows an admin to reset a users password
+'''
+@app.route('/admin-update-user-pass', methods=['GET', 'POST'])
+def update_user_pass():
+    if request.method == 'POST':
+
+        # get update request args
+        user_id = request.form['user_id']
+        new_pass = request.form['new_pass']
+
+        # update user
+        result = managers.users_manager.update_user_pass(user_id, None, new_pass)
+        return_object = {
+            'password_change_result': result
+        }
+        return jsonify(return_object)
+
+
+'''
+POST
+Allows a user to update their password
 '''
 @app.route('/update-user-pass', methods=['GET', 'POST'])
-def update_user_pass():
+def admin_update_user_pass():
     if request.method == 'POST':
 
         # get update request args
@@ -441,15 +462,11 @@ def prepare_csv():
 
         for i in range(0, len(image_ids)): 
             image_ids[i] = int(image_ids[i])
-
     results = managers.image_manager.fetch_images(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None, None, None)
 
     # handle edge cases
     if (len(results) == 0):
         return jsonify(count=0)
-
-    if (len(results) > 50):
-        return jsonify(message='Query too broad')
 
     # make a new temp folder for the csv file
     cur_time = datetime.now().strftime(time_format)
@@ -482,8 +499,8 @@ def clean_csv():
         # get age of this file in seconds
         time_difference = (datetime.now() - time).seconds
 
-        # remove file if it's more than 10 seconds old
-        if time_difference > 10:
+        # remove file if it's more than 5 seconds old
+        if time_difference > 5:
             os.remove('CSV_Files/' + filename)
 
 '''
@@ -498,12 +515,14 @@ def upload_file():
         os.makedirs(directory_name)
 
         # get flight-based request args
+        owner_id = request.form['owner_id']
         flight_name = request.form['flight_name']
         notes = request.form['notes']
         field_name = request.form['field_name']
         crop = request.form['crop']
         privacy_value = request.form['privacy_value']
         shared_users = request.form['shared_users']
+        shared_users = str(shared_users).split(',')
 
         # request.files contains all the files attached to the request
         for file in request.files.getlist('image'):
@@ -511,7 +530,7 @@ def upload_file():
             file.save(path)
 
         # build flight
-        managers.flight_manager.build_flight(os.path.abspath(directory_name), flight_name, notes, field_name, crop, privacy_enum(int(privacy_value)), shared_users)
+        managers.flight_manager.build_flight(owner_id, os.path.abspath(directory_name), flight_name, notes, field_name, crop, privacy_enum(int(privacy_value)), shared_users)
         
         return jsonify(success=True)
 
@@ -532,7 +551,7 @@ def clean_zipped():
         time_difference = (datetime.now() - time).seconds
 
         # remove file if it's more than 10 seconds old
-        if time_difference > 10:
+        if time_difference > 5:
             os.remove('zipped/' + filename)
 
 

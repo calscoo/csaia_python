@@ -71,12 +71,11 @@ def flights_rs_to_object_list(rs):
     return flights
 
 
-def build_flight(path, flight_name, manual_notes, field_name, crop_name, privacy, shared_users):
+def build_flight(owner_id, path, flight_name, manual_notes, field_name, crop_name, privacy, shared_users):
     images = image_manager.parse_image_metadata(path)
     flight_metadata = calculate_derived_flight_metadata(images)
-    user_id = None
     address = flight_address(flight_metadata.average_latitude, flight_metadata.average_longitude)
-    flight_records = [(user_id, flight_name, manual_notes, address, field_name,
+    flight_records = [(owner_id, flight_name, manual_notes, address, field_name,
         crop_name, flight_metadata.average_latitude, flight_metadata.average_longitude, flight_metadata.average_altitude,
         flight_metadata.flight_start_time, flight_metadata.flight_end_time, flight_metadata.hardware_make,
         flight_metadata.hardware_model, privacy.value)]
@@ -88,6 +87,7 @@ def build_flight(path, flight_name, manual_notes, field_name, crop_name, privacy
 
     for image in images:
         image.flight_id = flight_id
+        image.user_id = owner_id
     ids = image_manager.upload_images(images)
     # return {
     #     'flight-id': flight_id,
@@ -112,11 +112,11 @@ def fetch_flights(calling_user_id, flight_ids, user_ids, flight_name, manual_not
     rs = flight_dao.select_flights('*', flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model)
     flights = flights_rs_to_object_list(rs)
     for flight in flights:
-        if flight.privacy == privacy_enum.Private and flight.user_id != calling_user_id:
+        if flight.privacy.value == privacy_enum.Private.value and flight.user_id != int(calling_user_id):
             flights.remove(flight)
-        elif flight.privacy == privacy_enum.Shared:
-            shared_users = shared_flight_manager.fetch_shared_flight_users(flight.id)
-            if calling_user_id not in shared_users:
+        elif flight.privacy.value == privacy_enum.Shared.value:
+            shared_user_ids = shared_flight_manager.fetch_shared_flight_user_ids(flight.id)
+            if int(str(calling_user_id)) not in shared_user_ids:
                 flights.remove(flight)
     return flights
 
@@ -142,6 +142,7 @@ def flight_data_to_tuple(flight):
     for f in flight:
         tuple_flights.append((f.id, f.user_id, f.flight_name, f.manual_notes, f.address, f.field_name, f.crop_name, str(f.average_latitude), str(f.average_longitude), str(f.average_altitude), str(f.flight_start_time), str(f.flight_end_time), f.hardware_make, f.hardware_model, str(f.privacy)))
     return tuple_flights
+
 
 def flight_data_to_csv(file_name, flight_name):
     flights = fetch_flights(None, None, None, flight_name, None, None, None, None, None, None, None, None, None, None, None)

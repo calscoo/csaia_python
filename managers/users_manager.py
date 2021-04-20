@@ -15,13 +15,17 @@ def create_user(email, password, role):
 
 
 def update_user_role(id, role):
-    users_dao.update_user(id, None, role.value)
+    users_dao.update_user(id, None, role.value, None)
 
 
+# Method for updating user passwords. set old_pass to null to bypass previous password check
 def update_user_pass(id, old_pass, new_pass):
-    user = fetch_users(id, None, None, None)[0]
-    if user is not None and password_manager.check_password(old_pass, user.password):
-        users_dao.update_user(id, password_manager.get_hashed_password(new_pass).decode('utf-8'), None)
+    user = fetch_users([id], None, None, None)[0]
+    if user is not None and old_pass is None:
+        users_dao.update_user(id, password_manager.get_hashed_password(new_pass).decode('utf-8'), None, 1)
+        return True
+    elif user is not None and password_manager.check_password(old_pass, user.password):
+        users_dao.update_user(id, password_manager.get_hashed_password(new_pass).decode('utf-8'), None, 0)
         return True
     else:
         return False
@@ -29,12 +33,12 @@ def update_user_pass(id, old_pass, new_pass):
 
 def fetch_user_role(id):
     if id is not None:
-        return users_dao.select_users('role', id, None, None, None)[0][0]
+        return users_dao.select_users('role', [id], None, None, None, None)[0][0]
 
 
 def fetch_user_api_key(id, password):
     if id is not None and password is not None:
-        users = users_dao.select_users('api_key', id, None, password, None)
+        users = users_dao.select_users('api_key', [id], None, password, None, None)
 
         if len(users) == 0:
             return None
@@ -44,7 +48,7 @@ def fetch_user_api_key(id, password):
         
 def generate_user_api_key(id, password):
     if id is not None and password is not None:
-        users = users_dao.select_users('api_key', id, None, password, None)
+        users = users_dao.select_users('api_key', [id], None, password, None, None)
 
         if len(users) == 0:
             return None
@@ -63,9 +67,14 @@ def fetch_all_users():
     return users_rs_to_object_list(users_dao.select_all_users('*'))
 
 
-# Fetch all users for admin view
-def fetch_users(id, email, password, role):
-    return users_rs_to_object_list(users_dao.select_users('*', id, email, password, None if role is None else role.value))
+def check_force_password_reset(user_id):
+    if user_id is not None:
+        return int(str(users_dao.select_users('force_reset', [user_id], None, None, None, None)[0][0]))
+
+
+# Fetch users
+def fetch_users(ids, email, password, role):
+    return users_rs_to_object_list(users_dao.select_users('*', ids, email, password, None if role is None else role.value, None))
 
 
 # Return whether the email exists in the system
@@ -91,5 +100,5 @@ def users_rs_to_object_list(rs):
     if rs is not None:
         for tuple in rs:
             if tuple is not None:
-                users.append(user(tuple[0], tuple[1], tuple[2], roles(int(str(tuple[3])))))
+                users.append(user(tuple[0], tuple[1], tuple[2], roles(int(str(tuple[3]))), tuple[4]))
     return users

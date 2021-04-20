@@ -56,7 +56,7 @@ def image_objects_to_insert_tuple(list_images):
     """
     tuple_images = []
     for image in list_images:
-        tuple_images.append((None, image.flight_id, image.directory_location, image.image_extension, image.datetime, image.latitude,
+        tuple_images.append((image.user_id, image.flight_id, image.directory_location, image.image_extension, image.datetime, image.latitude,
                               image.longitude, image.altitude, image.image_width, image.image_height, image.exposure_time,
                               image.f_number, image.iso_speed, image.metering_mode, image.light_source, image.focal_length,
                               image.exposure_mode, image.white_balance, image.gain_control, image.contrast, image.saturation,

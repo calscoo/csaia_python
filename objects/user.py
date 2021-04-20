@@ -2,11 +2,12 @@ from enums.role import roles
 
 
 class user:
-    def __init__(self, id, email, password, role):
+    def __init__(self, id, email, password, role, force_reset):
         self._set_id(id)
         self._set_email(email)
         self._set_password(password)
         self._set_role(role)
+        self._set_force_reset(force_reset)
 
     def _get_id(self):
         return self.id
@@ -34,9 +35,16 @@ class user:
             raise TypeError("role must be of type enums.role")
         self.role = role
 
+    def _get_force_reset(self):
+        return self.force_reset
+
+    def _set_force_reset(self, force_reset):
+        self.force_reset = force_reset
+
     def __str__(self):
         return \
             "user: { id: " + str(self.id) + ", " + \
             "email: " + str(self.email) + ", " + \
             "password: " + str(self.password) + ", " + \
-            "role: " + str(self.role) + " }"
+            "role: " + str(self.role) + ", " + \
+            "force_reset: " + str(self.force_reset) + " }"

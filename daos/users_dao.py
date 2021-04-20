@@ -17,7 +17,7 @@ def insert_users(users_records):
     return dao_tools.execute(insert_users_query, users_records)
 
 
-def update_user(id, password, role):
+def update_user(id, password, role, force_reset):
     if id is not None and (password is not None or role is not None):
         users = Table('users')
         update_user_query = Query.update(users)
@@ -25,8 +25,11 @@ def update_user(id, password, role):
             update_user_query = update_user_query.set(users.password, password)
         if role is not None:
             update_user_query = update_user_query.set(users.role, role)
+        if force_reset is not None:
+            update_user_query = update_user_query.set(users.force_reset, force_reset)
         update_user_query = update_user_query.where(users.id.isin([id]))
         dao_tools.execute(update_user_query)
+
 
 def update_user_api_key(id, password, api_key):
     if id is not None and (password is not None or api_key is not None):
@@ -39,18 +42,21 @@ def update_user_api_key(id, password, api_key):
         select_user_query = select_user_query.where(users.id.isin([id]))
         dao_tools.execute(select_user_query)
 
-def select_users(select_columns, id, email, password, role):
+
+def select_users(select_columns, ids, email, password, role, force_reset):
     users = Table('users')
     select_users_query = Query.from_(users).select('*' if select_columns is None else select_columns)
-    if id is not None:
-        select_users_query = select_users_query.where(users.id.isin([id]))
+    if ids is not None:
+        select_users_query = select_users_query.where(users.id.isin(ids))
     if email is not None:
         select_users_query = select_users_query.where(users.email.isin([email]))
     if password is not None:
         select_users_query = select_users_query.where(users.password.isin([password]))
     if role is not None:
         select_users_query = select_users_query.where(users.role.isin([role]))
+    if force_reset is not None:
+        select_users_query = select_users_query.where(users.force_reset.isin([force_reset]))
     return dao_tools.execute(select_users_query)
 
 def select_all_users(select_columns):
-    return select_users(select_columns, None, None, None, None)
+    return select_users(select_columns, None, None, None, None, None)

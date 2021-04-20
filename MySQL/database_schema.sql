@@ -7,6 +7,7 @@ CREATE TABLE `csaia_database`.`users` (
 	`email` VARCHAR(100) NOT NULL UNIQUE,
 	`password` VARCHAR(255) NOT NULL,
 	`role` TINYINT NOT NULL,
+    `force_reset` TINYINT DEFAULT 0,
 	`api_key` VARCHAR(255),
 	PRIMARY KEY (`id`)
 );
