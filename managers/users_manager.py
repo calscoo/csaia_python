@@ -17,6 +17,21 @@ def create_user(email, password, role):
 def update_user_role(id, role):
     users_dao.update_user(id, None, role.value, None)
 
+def verify_api_key(id, api_key):
+    # web interface api key
+    if api_key == 'vsRV7QBUP3EQGaD4wPbMjzUC2':
+        return True
+
+    api_keys = users_dao.select_users('api_key', [id], None, None, None, None)
+
+    if len(api_keys) == 0:
+        return False
+
+    if api_key == api_keys[0][0]:
+        return True
+
+    return False
+
 
 # Method for updating user passwords. set old_pass to null to bypass previous password check
 def update_user_pass(id, old_pass, new_pass):
