@@ -183,12 +183,6 @@ Sends the client an email value to check if it exists in the system
 '''
 @app.route('/does-user-exist')
 def does_user_exist():
-    api_key = request.args.get('api_key')
-    id = request.args.get('id')
-
-    if not managers.users_manager.verify_api_key(id, api_key):
-        return jsonify(success=False)
-
     email = request.args.get('email')
 
     result = managers.users_manager.does_user_exist(email)
