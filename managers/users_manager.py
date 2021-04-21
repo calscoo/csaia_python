@@ -118,5 +118,5 @@ def users_rs_to_object_list(rs):
     if rs is not None:
         for tuple in rs:
             if tuple is not None:
-                users.append(user(tuple[0], tuple[1], tuple[2], roles(int(str(tuple[3]))), tuple[4]))
+                users.append(user(tuple[0], tuple[1], tuple[2], roles(int(str(tuple[3]))), tuple[4], tuple[5]))
     return users

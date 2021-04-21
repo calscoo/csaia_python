@@ -41,7 +41,7 @@ GET
 Sends the client a list of objects that match
 multiple query parameters obtained through the request parameters
 '''
-@app.route('/query')
+@app.route('/query', methods=['GET', 'POST'])
 def query_image():
     # unpack request parameters
     calling_user_id = str(request.args.get('calling_user_id'))
@@ -153,7 +153,7 @@ GET
 Sends the client a list of user objects
 multiple query parameters obtained through the request parameters
 '''
-@app.route('/fetch-all-users')
+@app.route('/fetch-all-users', methods=['GET', 'POST'])
 def fetch_all_users():
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -179,7 +179,7 @@ def fetch_all_users():
 GET
 Sends the client an email value to check if it exists in the system
 '''
-@app.route('/does-user-exist')
+@app.route('/does-user-exist', methods=['GET', 'POST'])
 def does_user_exist():
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -200,7 +200,7 @@ def does_user_exist():
 GET
 Sends the client and email and password to attempt a login
 '''
-@app.route('/login')
+@app.route('/login', methods=['GET', 'POST'])
 def login():
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -226,7 +226,7 @@ def login():
 GET
 Returns the user's role
 '''
-@app.route('/get-user-role')
+@app.route('/get-user-role', methods=['GET', 'POST'])
 def get_user_role():
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -246,7 +246,7 @@ def get_user_role():
 GET
 Returns the user's API key
 '''
-@app.route('/get-user-api-key')
+@app.route('/get-user-api-key', methods=['GET', 'POST'])
 def get_user_api_key():
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -266,7 +266,7 @@ def get_user_api_key():
 GET
 Generates a new API key for a user and returns it
 '''
-@app.route('/generate-user-api-key')
+@app.route('/generate-user-api-key', methods=['GET', 'POST'])
 def generate_user_api_key():
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -288,7 +288,7 @@ Sends the client a list of their own flights.
 user_id is determined by the calling_user_id
 request parameter.
 '''
-@app.route('/get-users-flights')
+@app.route('/get-users-flights', methods=['GET', 'POST'])
 def get_users_flights():
     api_key = request.args.get('api_key')
     calling_user_id = request.args.get('calling_user_id')
@@ -323,7 +323,7 @@ Sends the client a list of flight images that are shared
 with them. user_id is obtained from
 the request parameter calling_user_id.
 '''
-@app.route('/get-users-shared-flights')
+@app.route('/get-users-shared-flights', methods=['GET', 'POST'])
 def get_users_shared_flights():
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -449,7 +449,7 @@ GET
 Sends the client a zipped file of images
 Images are fetched via "image_ids" request argument
 '''
-@app.route('/prepare-zip')
+@app.route('/prepare-zip', methods=['GET', 'POST'])
 def prepare_zip():
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -499,7 +499,7 @@ def prepare_zip():
     return jsonify(zip_name=os.path.basename(zip_name))
 
 
-@app.route('/download-zip/<name>')
+@app.route('/download-zip/<name>', methods=['GET', 'POST'])
 def download_zip(name):
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -514,7 +514,7 @@ Sends the client a csv file of image metadata from
 the selected images.
 Images are fetched via "image_ids" request argument
 '''
-@app.route('/prepare-image-csv')
+@app.route('/prepare-image-csv', methods=['GET', 'POST'])
 def prepare_image_csv():
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -555,7 +555,7 @@ Sends the client a csv file of flight metadata from
 the selected images.
 Flights are fetched via "flight_ids" request argument
 '''
-@app.route('/prepare-flight-csv')
+@app.route('/prepare-flight-csv', methods=['GET', 'POST'])
 def prepare_flight_csv():
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -589,7 +589,7 @@ def prepare_flight_csv():
     return jsonify(csv_name=os.path.basename(csv_name))
 
 
-@app.route('/download-image-csv/<name>')
+@app.route('/download-image-csv/<name>', methods=['GET', 'POST'])
 def download_image_csv(name):
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
@@ -598,7 +598,7 @@ def download_image_csv(name):
     return send_file('image_csv_files\\' + name, as_attachment=True)
 
 
-@app.route('/download-flight-csv/<name>')
+@app.route('/download-flight-csv/<name>', methods=['GET', 'POST'])
 def download_flight_csv(name):
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
