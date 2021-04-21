@@ -30,12 +30,10 @@ def update_user(id, password, role, force_reset):
         dao_tools.execute(update_user_query)
 
 
-def update_user_api_key(id, password, api_key):
-    if id is not None and (password is not None or api_key is not None):
+def update_user_api_key(id, api_key):
+    if id is not None and (api_key is not None):
         users = Table('users')
         select_user_query = Query.update(users)
-        if password is not None:
-            select_user_query = select_user_query.set(users.password, password)
         if api_key is not None:
             select_user_query = select_user_query.set(users.api_key, api_key)
         select_user_query = select_user_query.where(users.id.isin([id]))

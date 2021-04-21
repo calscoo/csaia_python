@@ -50,6 +50,7 @@ def verify_api_key(api_key):
 
 
 def fetch_user_api_key(id, password):
+    print(id)
     if id is not None and password is not None:
         db_pass = users_dao.select_users('password', [id], None, None, None, None, None)
 
@@ -58,24 +59,26 @@ def fetch_user_api_key(id, password):
 
         if password_manager.check_password(password, db_pass[0][0]):
             api_key = users_dao.select_users('api_key', [id], None, None, None, None, None)
+            print(api_key)
             return api_key[0][0]
 
-
-        return None
+    return None
         
 def generate_user_api_key(id, password):
     if id is not None and password is not None:
-        users = users_dao.select_users('id', [id], None, password, None, None, None)
+        db_pass = users_dao.select_users('password', [id], None, None, None, None, None)
 
-        if len(users) == 0:
+        if len(db_pass) == 0:
             return None
 
-        api_key = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=20))
-        print(api_key)
+        if password_manager.check_password(password, db_pass[0][0]):
+            api_key = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=20))
+            print(api_key)
 
-        users_dao.update_user_api_key(id, password, api_key)
+            users_dao.update_user_api_key(id, api_key)
+            return api_key
 
-        return api_key
+        
 
     return None
 
