@@ -115,20 +115,28 @@ def query_image():
     if (model == 'null'):
         model = None
 
+    shared = request.args.get('shared')
+    if (shared == 'null'):
+        shared = None
+    else:
+        shared = int(shared)
+
+    if (shared == 1):
+        flight_ids = shared_flight_manager.fetch_users_shared_flight_ids(calling_user_id)
     # get file path from database
-    results = managers.image_manager.fetch_images(calling_user_id, image_ids, user_ids, flight_ids, None, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, None)
+    images = managers.image_manager.fetch_images(calling_user_id, image_ids, user_ids, flight_ids, None, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, None)
 
     return_object = {
-        'objects' : []
+        'objects': []
     }
 
-    for image in results:
+    for image in images:
         return_object['objects'].append({
             'id': image.id,
             'user_id': image.user_id,
             'flight_id': image.flight_id,
             'image_extension': image.image_extension,
-            'datetime' : image.datetime,
+            'datetime': image.datetime,
             'latitude': float_or_none(image.latitude),
             'longitude': float_or_none(image.longitude),
             'altitude': float_or_none(image.altitude)
@@ -271,6 +279,7 @@ def get_users_flights():
     for image in results:
         return_object['objects'].append({
             'id': image.id,
+            'user_id': image.user_id,
             'flight_id': image.flight_id,
             'image_extension': image.image_extension,
             'datetime': image.datetime,
@@ -281,9 +290,10 @@ def get_users_flights():
 
     return jsonify(return_object)
 
+
 '''
 GET
-Sends the client a list flights that are shared
+Sends the client a list of flight images that are shared
 with them. user_id is obtained from
 the request parameter calling_user_id.
 '''
@@ -310,6 +320,7 @@ def get_users_shared_flights():
         })
 
     return jsonify(return_object)
+
 
 '''
 POST
@@ -442,14 +453,15 @@ def prepare_zip():
 def download_zip(name):
     return send_file('zipped\\' + name, as_attachment=True)
 
+
 '''
 GET
-Sends the client a csv file of metadata from
+Sends the client a csv file of image metadata from
 the selected images.
 Images are fetched via "image_ids" request argument
 '''
-@app.route('/prepare-csv')
-def prepare_csv():
+@app.route('/prepare-image-csv')
+def prepare_image_csv():
     # process to remove any old csv files in the csv folder
     clean_csv()
 
@@ -459,7 +471,6 @@ def prepare_csv():
         image_ids = None
     else:
         image_ids = str(image_ids).split(',')
-
         for i in range(0, len(image_ids)): 
             image_ids[i] = int(image_ids[i])
     results = managers.image_manager.fetch_images(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None, None, None)
@@ -470,8 +481,8 @@ def prepare_csv():
 
     # make a new temp folder for the csv file
     cur_time = datetime.now().strftime(time_format)
-    directory_name = 'CSV_Files/12345_' + cur_time
-    file_name = '12345_' + cur_time
+    directory_name = 'image_csv_files/image_' + cur_time
+    file_name = 'image_' + cur_time
     csv_name = directory_name + '.csv'
     managers.image_manager.image_data_to_csv(file_name, results)
 
@@ -480,9 +491,50 @@ def prepare_csv():
     return jsonify(csv_name=os.path.basename(csv_name))
 
 
-@app.route('/download-csv/<name>')
-def download_csv(name):
-    return send_file('CSV_Files\\' + name, as_attachment=True)
+'''
+GET
+Sends the client a csv file of flight metadata from
+the selected images.
+Flights are fetched via "flight_ids" request argument
+'''
+@app.route('/prepare-flight-csv')
+def prepare_flight_csv():
+    # process to remove any old csv files in the csv folder
+    clean_csv()
+
+    flight_ids = request.args.get('flight_ids')
+    calling_user_id = request.args.get('calling_user_id')
+    if (flight_ids == 'null'):
+        flight_ids = None
+    else:
+        flight_ids = str(flight_ids).split(',')
+        for i in range(0, len(flight_ids)):
+            flight_ids[i] = int(flight_ids[i])
+    results = managers.flight_manager.fetch_flights(calling_user_id, flight_ids, None, None, None, None, None, None, None, None, None, None, None, None, None)
+    # handle edge cases
+    if (len(results) == 0):
+        return jsonify(count=0)
+
+    # make a new temp folder for the csv file
+    cur_time = datetime.now().strftime(time_format)
+    directory_name = 'flight_csv_files/flight_' + cur_time
+    file_name = 'flight_' + cur_time
+    csv_name = directory_name + '.csv'
+    managers.flight_manager.flight_data_to_csv(file_name, results)
+
+    # send csv over to user
+    # return send_file(zip_name, as_attachment=True)
+    return jsonify(csv_name=os.path.basename(csv_name))
+
+
+@app.route('/download-image-csv/<name>')
+def download_image_csv(name):
+    return send_file('image_csv_files\\' + name, as_attachment=True)
+
+
+@app.route('/download-flight-csv/<name>')
+def download_flight_csv(name):
+    return send_file('flight_csv_files\\' + name, as_attachment=True)
 
 '''
 Method to keep server files to a miniumum
@@ -491,7 +543,7 @@ Deletes all files in the csv folder that
 were made more than 10 seconds ago
 '''
 def clean_csv():
-    for filename in os.listdir('CSV_Files'):
+    for filename in os.listdir('image_csv_files'):
         # parse out the time this file was created via name
         timestamp = filename.split('_')[1].split('.csv')[0]
         time = datetime.strptime(timestamp, time_format)
@@ -501,7 +553,7 @@ def clean_csv():
 
         # remove file if it's more than 5 seconds old
         if time_difference > 5:
-            os.remove('CSV_Files/' + filename)
+            os.remove('image_csv_files/' + filename)
 
 '''
 POST

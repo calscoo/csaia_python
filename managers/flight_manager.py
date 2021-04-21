@@ -144,17 +144,6 @@ def flight_data_to_tuple(flight):
     return tuple_flights
 
 
-def flight_data_to_csv(file_name, flight_name):
-    flights = fetch_flights(None, None, None, flight_name, None, None, None, None, None, None, None, None, None, None, None)
-    flight_to_insert = flight_data_to_tuple(flights)
-    with open('CSV_Files/{}.csv'.format(file_name),'w', newline='') as out:
-        csv_out=csv.writer(out)
-        csv_out.writerow(['flight_id','user_id','flight_name','manual_notes','address','field_name','crop_name','average_latitude','average_longitude','average_altitude','start_time'
-        ,'end_time','hardware_make','hardware_model','privacy'])
-        for row in flight_to_insert:
-            csv_out.writerow(row)
-
-
 def flight_address(latitude, longitude):
     address = None
     if latitude is not None and longitude is not None:
@@ -163,3 +152,26 @@ def flight_address(latitude, longitude):
         location = geo_locator.reverse(address_coordinates)
         address = location.address
     return address
+
+
+def flight_data_to_csv(file_name, flights):
+    flights_to_insert = flight_data_to_tuple(flights)
+    with open('flight_csv_files/{}.csv'.format(file_name),'w', newline='') as out:
+        csv_out = csv.writer(out)
+        csv_out.writerow([
+            'id',
+            'user_id',
+            'flight_name',
+            'manual_notes',
+            'address',
+            'field_name',
+            'crop_name',
+            'average_latitude',
+            'average_longitude',
+            'average_altitude',
+            'flight_start_time',
+            'flight_end_time',
+            'hardware_make',
+            'hardware_model',
+            'privacy'])
+        csv_out.writerows(flights_to_insert)
