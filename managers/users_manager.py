@@ -17,20 +17,6 @@ def create_user(email, password, role):
 def update_user_role(id, role):
     users_dao.update_user(id, None, role.value, None)
 
-def verify_api_key(id, api_key):
-    # web interface api key
-    if api_key == 'vsRV7QBUP3EQGaD4wPbMjzUC2':
-        return True
-
-    api_keys = users_dao.select_users('api_key', [id], None, None, None, None)
-
-    if len(api_keys) == 0:
-        return False
-
-    if api_key == api_keys[0][0]:
-        return True
-
-    return False
 
 
 # Method for updating user passwords. set old_pass to null to bypass previous password check
@@ -50,25 +36,42 @@ def fetch_user_role(id):
     if id is not None:
         return users_dao.select_users('role', [id], None, None, None, None)[0][0]
 
+def verify_api_key(api_key):
+    if api_key is None or api_key == '':
+        return False
+
+    # web interface api key
+    if api_key == 'vsRV7QBUP3EQGaD4wPbMjzUC2':
+        return True
+
+    ids = users_dao.select_users('id', None, None, None, None, None, api_key)
+
+    return len(ids) > 0
+
 
 def fetch_user_api_key(id, password):
     if id is not None and password is not None:
-        users = users_dao.select_users('api_key', [id], None, password, None, None)
+        db_pass = users_dao.select_users('password', [id], None, None, None, None, None)
 
-        if len(users) == 0:
+        if len(db_pass) == 0:
             return None
 
-        return users[0][0]
+        if password_manager.check_password(password, db_pass[0][0]):
+            api_key = users_dao.select_users('api_key', [id], None, None, None, None, None)
+            return api_key[0][0]
 
+
+        return None
         
 def generate_user_api_key(id, password):
     if id is not None and password is not None:
-        users = users_dao.select_users('api_key', [id], None, password, None, None)
+        users = users_dao.select_users('id', [id], None, password, None, None, None)
 
         if len(users) == 0:
             return None
 
         api_key = ''.join(random.choices(string.ascii_uppercase + string.ascii_lowercase + string.digits, k=20))
+        print(api_key)
 
         users_dao.update_user_api_key(id, password, api_key)
 
@@ -84,12 +87,12 @@ def fetch_all_users():
 
 def check_force_password_reset(user_id):
     if user_id is not None:
-        return int(str(users_dao.select_users('force_reset', [user_id], None, None, None, None)[0][0]))
+        return int(str(users_dao.select_users('force_reset', [user_id], None, None, None, None, None)[0][0]))
 
 
 # Fetch users
 def fetch_users(ids, email, password, role):
-    return users_rs_to_object_list(users_dao.select_users('*', ids, email, password, None if role is None else role.value, None))
+    return users_rs_to_object_list(users_dao.select_users('*', ids, email, password, None if role is None else role.value, None, None))
 
 
 # Return whether the email exists in the system

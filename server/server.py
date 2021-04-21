@@ -45,9 +45,9 @@ multiple query parameters obtained through the request parameters
 def query_image():
     # unpack request parameters
     calling_user_id = str(request.args.get('calling_user_id'))
-    api_key = request.args.get('api_key')
 
-    if not managers.users_manager.verify_api_key(calling_user_id, api_key):
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
 
     image_ids = request.args.get('image_ids')
@@ -156,9 +156,7 @@ multiple query parameters obtained through the request parameters
 @app.route('/fetch-all-users')
 def fetch_all_users():
     api_key = request.args.get('api_key')
-    id = request.args.get('id')
-
-    if not managers.users_manager.verify_api_key(id, api_key):
+    if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
 
     results = managers.users_manager.fetch_all_users()
@@ -183,6 +181,10 @@ Sends the client an email value to check if it exists in the system
 '''
 @app.route('/does-user-exist')
 def does_user_exist():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     email = request.args.get('email')
 
     result = managers.users_manager.does_user_exist(email)
@@ -200,6 +202,9 @@ Sends the client and email and password to attempt a login
 '''
 @app.route('/login')
 def login():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
 
     email = request.args.get('email')
     password = request.args.get('password')
@@ -224,9 +229,7 @@ Returns the user's role
 @app.route('/get-user-role')
 def get_user_role():
     api_key = request.args.get('api_key')
-    id = request.args.get('id')
-
-    if not managers.users_manager.verify_api_key(id, api_key):
+    if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
 
     user_id = request.args.get('user_id')
@@ -245,6 +248,10 @@ Returns the user's API key
 '''
 @app.route('/get-user-api-key')
 def get_user_api_key():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     user_id = request.args.get('user_id')
     password = request.args.get('password')
 
@@ -261,6 +268,9 @@ Generates a new API key for a user and returns it
 '''
 @app.route('/generate-user-api-key')
 def generate_user_api_key():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
 
     user_id = request.args.get('user_id')
     password = request.args.get('password')
@@ -283,7 +293,7 @@ def get_users_flights():
     api_key = request.args.get('api_key')
     calling_user_id = request.args.get('calling_user_id')
 
-    if not managers.users_manager.verify_api_key(calling_user_id, api_key):
+    if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
 
     results = managers.image_manager.fetch_images(calling_user_id, None, [calling_user_id], None, None, None, None, None, None, None, None, None, None)
@@ -315,6 +325,10 @@ the request parameter calling_user_id.
 '''
 @app.route('/get-users-shared-flights')
 def get_users_shared_flights():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     calling_user_id = request.args.get('calling_user_id')
     flight_ids = shared_flight_manager.fetch_users_shared_flight_ids(calling_user_id)
     images = image_manager.fetch_images(calling_user_id, None, None, flight_ids, None, None, None, None, None, None, None, None, None)
@@ -344,6 +358,10 @@ Allows the admin to update a users role
 '''
 @app.route('/update-user-role', methods=['GET', 'POST'])
 def update_user_role():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     if request.method == 'POST':
 
         # get update request args
@@ -361,6 +379,10 @@ Allows an admin to reset a users password
 '''
 @app.route('/admin-update-user-pass', methods=['GET', 'POST'])
 def update_user_pass():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     if request.method == 'POST':
 
         # get update request args
@@ -381,6 +403,10 @@ Allows a user to update their password
 '''
 @app.route('/update-user-pass', methods=['GET', 'POST'])
 def admin_update_user_pass():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     if request.method == 'POST':
 
         # get update request args
@@ -402,6 +428,10 @@ Allows the admin to create a user
 '''
 @app.route('/create-user', methods=['GET', 'POST'])
 def create_user():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     if request.method == 'POST':
 
         # get create request args
@@ -421,6 +451,10 @@ Images are fetched via "image_ids" request argument
 '''
 @app.route('/prepare-zip')
 def prepare_zip():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     # process to remove any old zip files in the zipped folder
     clean_zipped()
 
@@ -467,6 +501,10 @@ def prepare_zip():
 
 @app.route('/download-zip/<name>')
 def download_zip(name):
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     return send_file('zipped\\' + name, as_attachment=True)
 
 
@@ -478,6 +516,10 @@ Images are fetched via "image_ids" request argument
 '''
 @app.route('/prepare-image-csv')
 def prepare_image_csv():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     # process to remove any old csv files in the csv folder
     clean_csv()
 
@@ -515,6 +557,10 @@ Flights are fetched via "flight_ids" request argument
 '''
 @app.route('/prepare-flight-csv')
 def prepare_flight_csv():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+        
     # process to remove any old csv files in the csv folder
     clean_csv()
 
@@ -545,11 +591,19 @@ def prepare_flight_csv():
 
 @app.route('/download-image-csv/<name>')
 def download_image_csv(name):
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     return send_file('image_csv_files\\' + name, as_attachment=True)
 
 
 @app.route('/download-flight-csv/<name>')
 def download_flight_csv(name):
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     return send_file('flight_csv_files\\' + name, as_attachment=True)
 
 '''
@@ -577,18 +631,17 @@ Allows the client to upload flights
 '''
 @app.route('/upload-flight', methods=['GET', 'POST'])
 def upload_file():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
     if request.method == 'POST':
-        owner_id = request.form['owner_id']
-        api_key = request.form['api_key']
-
-        if not managers.users_manager.verify_api_key(owner_id, api_key):
-            return jsonify(success=False)
-
         cur_time = datetime.now().strftime(time_format)
         directory_name = 'uploaded/12345_' + cur_time
         os.makedirs(directory_name)
 
         # get flight-based request args
+        owner_id = request.form['owner_id']
         flight_name = request.form['flight_name']
         notes = request.form['notes']
         field_name = request.form['field_name']

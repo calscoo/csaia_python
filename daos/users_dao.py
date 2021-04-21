@@ -12,7 +12,6 @@ update_users_query = """
     WHERE email = %s
     """
 
-
 def insert_users(users_records):
     return dao_tools.execute(insert_users_query, users_records)
 
@@ -43,7 +42,7 @@ def update_user_api_key(id, password, api_key):
         dao_tools.execute(select_user_query)
 
 
-def select_users(select_columns, ids, email, password, role, force_reset):
+def select_users(select_columns, ids, email, password, role, force_reset, api_key):
     users = Table('users')
     select_users_query = Query.from_(users).select('*' if select_columns is None else select_columns)
     if ids is not None:
@@ -56,7 +55,10 @@ def select_users(select_columns, ids, email, password, role, force_reset):
         select_users_query = select_users_query.where(users.role.isin([role]))
     if force_reset is not None:
         select_users_query = select_users_query.where(users.force_reset.isin([force_reset]))
+    if api_key is not None:
+        select_users_query = select_users_query.where(users.api_key.isin([api_key]))
+
     return dao_tools.execute(select_users_query)
 
 def select_all_users(select_columns):
-    return select_users(select_columns, None, None, None, None, None)
+    return select_users(select_columns, None, None, None, None, None, None)

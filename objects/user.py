@@ -2,12 +2,13 @@ from enums.role import roles
 
 
 class user:
-    def __init__(self, id, email, password, role, force_reset):
+    def __init__(self, id, email, password, role, force_reset, api_key):
         self._set_id(id)
         self._set_email(email)
         self._set_password(password)
         self._set_role(role)
         self._set_force_reset(force_reset)
+        self._set_api_key(api_key)
 
     def _get_id(self):
         return self.id
@@ -40,6 +41,12 @@ class user:
 
     def _set_force_reset(self, force_reset):
         self.force_reset = force_reset
+
+    def _get_api_key(self):
+        return self.api_key
+
+    def _set_api_key(self, api_key):
+        self.api_key = api_key
 
     def __str__(self):
         return \
