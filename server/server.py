@@ -255,6 +255,8 @@ def get_user_api_key():
     user_id = request.args.get('user_id')
     password = request.args.get('password')
 
+    # print(api_key, user_id, password)
+
     api_key = managers.users_manager.fetch_user_api_key(user_id, password)
 
     if api_key is not None:
