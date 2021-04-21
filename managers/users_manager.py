@@ -34,7 +34,7 @@ def update_user_pass(id, old_pass, new_pass):
 
 def fetch_user_role(id):
     if id is not None:
-        return users_dao.select_users('role', [id], None, None, None, None)[0][0]
+        return users_dao.select_users('role', [id], None, None, None, None, None)[0][0]
 
 def verify_api_key(api_key):
     if api_key is None or api_key == '':
