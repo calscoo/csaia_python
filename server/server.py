@@ -3,7 +3,6 @@ from flask import Flask, json, jsonify, request
 from flask.helpers import send_file
 from datetime import datetime
 from flask_cors import CORS
-from managers import shared_flight_manager, image_manager
 import os, sys
 
 
@@ -11,6 +10,7 @@ sys.path.append('../')
 
 # external scripts must be imported after the previous line
 from enums.privacy import privacy as privacy_enum
+from managers import shared_flight_manager, image_manager
 from enums.role import roles
 import managers.image_manager
 import managers.flight_manager
@@ -45,6 +45,10 @@ multiple query parameters obtained through the request parameters
 def query_image():
     # unpack request parameters
     calling_user_id = str(request.args.get('calling_user_id'))
+    api_key = request.args.get('api_key')
+
+    if not managers.users_manager.verify_api_key(calling_user_id, api_key):
+        return jsonify(success=False)
 
     image_ids = request.args.get('image_ids')
     if (image_ids == 'null'):
@@ -144,7 +148,6 @@ def query_image():
 
     return jsonify(return_object)
 
-
 '''
 GET
 Sends the client a list of user objects
@@ -152,6 +155,11 @@ multiple query parameters obtained through the request parameters
 '''
 @app.route('/fetch-all-users')
 def fetch_all_users():
+    api_key = request.args.get('api_key')
+    id = request.args.get('id')
+
+    if not managers.users_manager.verify_api_key(id, api_key):
+        return jsonify(success=False)
 
     results = managers.users_manager.fetch_all_users()
 
@@ -175,6 +183,11 @@ Sends the client an email value to check if it exists in the system
 '''
 @app.route('/does-user-exist')
 def does_user_exist():
+    api_key = request.args.get('api_key')
+    id = request.args.get('id')
+
+    if not managers.users_manager.verify_api_key(id, api_key):
+        return jsonify(success=False)
 
     email = request.args.get('email')
 
@@ -199,7 +212,7 @@ def login():
 
     user_id = managers.users_manager.validate_login_credentials(email, password)
     force_reset = 0
-    if user_id is not -1:
+    if user_id != -1:
         force_reset = managers.users_manager.check_force_password_reset(user_id)
 
     return_object = {
@@ -216,6 +229,11 @@ Returns the user's role
 '''
 @app.route('/get-user-role')
 def get_user_role():
+    api_key = request.args.get('api_key')
+    id = request.args.get('id')
+
+    if not managers.users_manager.verify_api_key(id, api_key):
+        return jsonify(success=False)
 
     user_id = request.args.get('user_id')
 
@@ -233,7 +251,6 @@ Returns the user's API key
 '''
 @app.route('/get-user-api-key')
 def get_user_api_key():
-
     user_id = request.args.get('user_id')
     password = request.args.get('password')
 
@@ -269,7 +286,12 @@ request parameter.
 '''
 @app.route('/get-users-flights')
 def get_users_flights():
+    api_key = request.args.get('api_key')
     calling_user_id = request.args.get('calling_user_id')
+
+    if not managers.users_manager.verify_api_key(calling_user_id, api_key):
+        return jsonify(success=False)
+
     results = managers.image_manager.fetch_images(calling_user_id, None, [calling_user_id], None, None, None, None, None, None, None, None, None, None)
 
     return_object = {
@@ -562,12 +584,17 @@ Allows the client to upload flights
 @app.route('/upload-flight', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'POST':
+        owner_id = request.form['owner_id']
+        api_key = request.form['api_key']
+
+        if not managers.users_manager.verify_api_key(owner_id, api_key):
+            return jsonify(success=False)
+
         cur_time = datetime.now().strftime(time_format)
         directory_name = 'uploaded/12345_' + cur_time
         os.makedirs(directory_name)
 
         # get flight-based request args
-        owner_id = request.form['owner_id']
         flight_name = request.form['flight_name']
         notes = request.form['notes']
         field_name = request.form['field_name']
