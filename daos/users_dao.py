@@ -3,8 +3,8 @@ from daos.tools import dao_tools
 import mysql.connector
 
 insert_users_query = """ 
-INSERT INTO users(email, password, role) 
-VALUES (%s, %s, %s)"""
+INSERT INTO users(email, password, role, force_reset) 
+VALUES (%s, %s, %s, %s)"""
 
 update_users_query = """
     UPDATE users 
@@ -31,11 +31,10 @@ def update_user(id, password, role, force_reset):
 
 
 def update_user_api_key(id, api_key):
-    if id is not None and (api_key is not None):
+    if id is not None:
         users = Table('users')
         select_user_query = Query.update(users)
-        if api_key is not None:
-            select_user_query = select_user_query.set(users.api_key, api_key)
+        select_user_query = select_user_query.set(users.api_key, api_key)
         select_user_query = select_user_query.where(users.id.isin([id]))
         dao_tools.execute(select_user_query)
 

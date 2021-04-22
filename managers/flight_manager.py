@@ -83,6 +83,8 @@ def build_flight(owner_id, path, flight_name, manual_notes, field_name, crop_nam
     flight_id = flight_dao.insert_flights(flight_records)[0]
 
     if privacy == privacy_enum.Shared:
+        if owner_id in shared_users:
+            shared_users.remove(owner_id)
         shared_flight_manager.share_flight(flight_id, shared_users)
 
     for image in images:
@@ -111,14 +113,15 @@ def build_flight(owner_id, path, flight_name, manual_notes, field_name, crop_nam
 def fetch_flights(calling_user_id, flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model):
     rs = flight_dao.select_flights('*', flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model)
     flights = flights_rs_to_object_list(rs)
+    flights_to_remove = set()
     for flight in flights:
-        if flight.privacy.value == privacy_enum.Private.value and flight.user_id != int(calling_user_id):
-            flights.remove(flight)
-        elif flight.privacy.value == privacy_enum.Shared.value:
+        if flight.privacy == privacy_enum.Private and flight.user_id != int(calling_user_id):
+            flights_to_remove.add(flight)
+        elif flight.privacy == privacy_enum.Shared and flight.user_id != int(calling_user_id):
             shared_user_ids = shared_flight_manager.fetch_shared_flight_user_ids(flight.id)
             if int(str(calling_user_id)) not in shared_user_ids:
-                flights.remove(flight)
-    return flights
+                flights_to_remove.add(flight)
+    return set(flights).difference(flights_to_remove)
 
 
 def remove_flight(flight_id):
@@ -133,7 +136,9 @@ def remove_flight(flight_id):
         The id of the flight to remove
     """
     flight_to_delete = flight_dao.select_flights('id', [flight_id], None, None, None, None, None, None, None, None, None, None, None, None, None)
+    print(flight_to_delete)
     flight_id_to_delete = None if len(flight_to_delete) == 0 else flight_to_delete[0][0]
+    print(flight_id_to_delete)
     flight_dao.delete_flight(flight_id_to_delete)
 
 

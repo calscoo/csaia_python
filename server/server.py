@@ -255,8 +255,6 @@ def get_user_api_key():
     user_id = request.args.get('user_id')
     password = request.args.get('password')
 
-    # print(api_key, user_id, password)
-
     api_key = managers.users_manager.fetch_user_api_key(user_id, password)
 
     if api_key is not None:
@@ -367,12 +365,17 @@ def update_user_role():
     if request.method == 'POST':
 
         # get update request args
+        admin_id = request.form['admin_id']
+        admin_pass = request.form['admin_pass']
         user_id = request.form['user_id']
         role = request.form['role']
 
         # update user
-        managers.users_manager.update_user_role(user_id, roles(int(str(role))))
-        return jsonify(success=True)
+        result = managers.users_manager.update_user_role(user_id, roles(int(str(role))), admin_id, admin_pass)
+        return_object = {
+            'role_change_result': result
+        }
+        return jsonify(return_object)
 
 
 '''
@@ -388,11 +391,13 @@ def update_user_pass():
     if request.method == 'POST':
 
         # get update request args
+        admin_id = request.form['admin_id']
+        admin_pass = request.form['admin_pass']
         user_id = request.form['user_id']
         new_pass = request.form['new_pass']
 
         # update user
-        result = managers.users_manager.update_user_pass(user_id, None, new_pass)
+        result = managers.users_manager.admin_update_user_pass(user_id, new_pass, admin_id, admin_pass)
         return_object = {
             'password_change_result': result
         }
@@ -437,13 +442,47 @@ def create_user():
     if request.method == 'POST':
 
         # get create request args
+        admin_id = request.form['admin_id']
+        admin_pass = request.form['admin_pass']
         email = request.form['email']
         password = request.form['password']
         role = request.form['role']
 
         # create user
-        managers.users_manager.create_user(email, password, roles(int(str(role))))
-        return jsonify(success=True)
+        result = managers.users_manager.create_user(email, password, roles(int(str(role))), admin_id, admin_pass)
+        return_object = {
+            'create_user_result': result
+        }
+        return jsonify(return_object)
+
+
+'''
+POST
+Allows the admin to create a user
+'''
+@app.route('/remove-images', methods=['GET', 'POST'])
+def remove_images():
+    api_key = request.args.get('api_key')
+    if not managers.users_manager.verify_api_key(api_key):
+        return jsonify(success=False)
+
+    if request.method == 'POST':
+
+        # get create request args
+        admin_id = request.form['admin_id']
+        admin_pass = request.form['admin_pass']
+        image_ids = request.form['image_ids']
+
+        image_ids = str(image_ids).split(',')
+        for i in range(0, len(image_ids)):
+            image_ids[i] = int(image_ids[i])
+
+        # remove images
+        result = managers.image_manager.remove_images(image_ids, admin_id, admin_pass)
+        return_object = {
+            'images_removed_result': result
+        }
+        return jsonify(return_object)
 
 
 '''
@@ -466,7 +505,6 @@ def prepare_zip():
         image_ids = None
     else:
         image_ids = str(image_ids).split(',')
-
         for i in range(0, len(image_ids)): 
             image_ids[i] = int(image_ids[i])
 

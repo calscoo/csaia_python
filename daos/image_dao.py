@@ -64,15 +64,15 @@ def select_images(select_columns, image_ids, user_ids, flight_ids, directory_loc
     """
     images = Table('images')
     select_image_query = Query.from_(images).select('*' if select_columns is None else select_columns)
-    if image_ids is not None and len(image_ids) > 0:
+    if image_ids is not None:
         select_image_query = select_image_query.where(images.id.isin(image_ids))
-    if user_ids is not None and len(user_ids) > 0:
+    if user_ids is not None:
         select_image_query = select_image_query.where(images.user_id.isin(user_ids))
-    if flight_ids is not None and len(flight_ids) > 0:
+    if flight_ids is not None:
         select_image_query = select_image_query.where(images.flight_id.isin(flight_ids))
     if directory_location is not None:
         select_image_query = select_image_query.where(images.directory_location.isin([directory_location]))
-    if extensions is not None and len(extensions) > 0:
+    if extensions is not None:
         select_image_query = select_image_query.where(images.image_extension.isin(extensions))
     if datetime_range is not None:
         select_image_query = select_image_query.where(images.datetime >= datetime_range.begin).where(images.datetime <= datetime_range.end)

@@ -5,7 +5,8 @@ import re
 import exifread
 import csv
 
-from managers import flight_manager
+from managers import flight_manager, users_manager
+from managers.tools import password_manager
 from objects.image import image
 from daos import image_dao
 from GPSPhoto import gpsphoto
@@ -153,7 +154,7 @@ def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_loc
     requested_flight_ids = set()
     for image in images:
         requested_flight_ids.add(image.flight_id)
-    allowed_flights = flight_manager.fetch_flights(calling_user_id, requested_flight_ids, None, None, None, None, None, None, None, None, None, None, None, None, None)
+    allowed_flights = flight_manager.fetch_flights(calling_user_id, list(requested_flight_ids), None, None, None, None, None, None, None, None, None, None, None, None, None)
     allowed_flight_ids = set()
     for allowed_flight in allowed_flights:
         allowed_flight_ids.add(allowed_flight.id)
@@ -173,7 +174,7 @@ def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_loc
     return return_images
 
 
-def remove_images(image_ids):
+def remove_images(image_ids, admin_id, admin_pass):
     """
     Removes all the images containing the passed ids
     NOTE: This will also remove images flight if the image deletion leaves a flight without images
@@ -184,19 +185,28 @@ def remove_images(image_ids):
     image_ids : list of int
         The ids of the images to remove
     """
-    flight_ids = set()
-    image_ids_to_delete = set()
-    images_to_delete = image_dao.select_images('id, flight_id', image_ids, None, None, None, None, None, None, None, None, None, None, None)
-    if images_to_delete is not None and len(images_to_delete) > 0:
-        for image in images_to_delete:
-            flight_ids.add(image[1])
-            image_ids_to_delete.add(image[0])
-        image_dao.delete_images(list(image_ids_to_delete))
-        for flight_id in flight_ids:
-            if flight_id is not None:
-                flight_remaining_images = image_dao.select_images('count(*)', None, None, [flight_id], None, None, None, None, None, None, None, None, None)[0][0]
-                if flight_remaining_images == 0:
-                    flight_manager.remove_flight(flight_id)
+    assert admin_id and admin_pass is not None
+    admin_user = users_manager.fetch_users([admin_id], None, None, None)[0]
+    if password_manager.check_password(admin_pass, admin_user.password):
+        flight_ids = set()
+        image_ids_to_delete = set()
+        images_to_delete = image_dao.select_images('id, flight_id', image_ids, None, None, None, None, None, None, None,
+                                                   None, None, None, None)
+        if images_to_delete is not None and len(images_to_delete) > 0:
+            for image in images_to_delete:
+                flight_ids.add(image[1])
+                image_ids_to_delete.add(image[0])
+            image_dao.delete_images(list(image_ids_to_delete))
+            for flight_id in flight_ids:
+                if flight_id is not None:
+                    flight_remaining_images = \
+                    image_dao.select_images('count(*)', None, None, [flight_id], None, None, None, None, None, None,
+                                            None, None, None)[0][0]
+                    if flight_remaining_images == 0:
+                        flight_manager.remove_flight(flight_id)
+            return True
+        else:
+            return False
 
 
 def image_data_to_csv(file_name, images):
