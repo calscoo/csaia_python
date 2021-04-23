@@ -121,6 +121,13 @@ def select_all_flights(select_columns):
 
 
 def delete_flight(flight_id):
+    """
+    Deletes a flight containing the passed id
+
+    Parameters
+    ----------
+    flight_id : integer
+    """
     if flight_id is not None:
         flights = Table('flights')
         delete_flight_query = Query.from_(flights).delete().where(flights.id.isin([flight_id]))
@@ -128,6 +135,15 @@ def delete_flight(flight_id):
 
 
 def update_flight(id, flight):
+    """
+    Deletes a flight containing the ID of the flight and the name of the flight
+
+    Parameters
+    ----------
+    flight_id : integer
+    flight : string
+
+    """
     if id is not None and flight is not None:
         flights = Table('flights')
         update_flight_query = Query.update(flights)
