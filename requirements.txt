@@ -1,0 +1,10 @@
+flask
+flask_cors
+pypika
+mysql-connector
+bcrypt
+exifread
+geopy
+GPSPhoto
+Pillow
+piexif
