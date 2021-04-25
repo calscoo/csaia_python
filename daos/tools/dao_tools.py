@@ -26,8 +26,8 @@ def execute(query, *args):
     try:
         with connect(
                 host="localhost",
-                user="root",
-                password="4rHgjt9S@84zw3Jo#V@@@RGmW",
+                user="csaia",
+                password="hHTa96vh#54&ijzi5*A%a!QHJ",
                 database="csaia_database",
         ) as connection:
             ids = []
