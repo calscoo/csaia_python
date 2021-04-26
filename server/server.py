@@ -718,7 +718,7 @@ def clean_zipped():
 
         # remove file if it's more than 10 seconds old
         if time_difference > 5:
-            os.remove(os.path.join('zipped', filename))
+            os.remove(os.path.join('./zipped', filename))
 
 
 if __name__ == '__main__':
