@@ -519,7 +519,7 @@ def prepare_zip():
 
     # make a new temp folder for the zipped file
     cur_time = datetime.now().strftime(time_format)
-    directory_name = 'zipped/12345_' + cur_time
+    directory_name = './zipped/' + calling_user_id + '_' + cur_time
     zip_name = directory_name + '.zip'
     os.makedirs(directory_name)
 
@@ -676,12 +676,14 @@ def upload_file():
         return jsonify(success=False)
 
     if request.method == 'POST':
+        owner_id = request.form['owner_id']
+        
         cur_time = datetime.now().strftime(time_format)
-        directory_name = 'uploaded/12345_' + cur_time
+        directory_name = './uploaded/' + owner_id + '_' + cur_time
         os.makedirs(directory_name)
 
         # get flight-based request args
-        owner_id = request.form['owner_id']
+        
         flight_name = request.form['flight_name']
         notes = request.form['notes']
         field_name = request.form['field_name']
@@ -722,4 +724,4 @@ def clean_zipped():
 
 
 if __name__ == '__main__':
-   app.run()
+   app.run(host='0.0.0.0', port=5000)
