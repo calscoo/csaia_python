@@ -5,7 +5,6 @@ from datetime import datetime
 from flask_cors import CORS
 import os, sys
 
-
 sys.path.append('../')
 
 # external scripts must be imported after the previous line
@@ -519,14 +518,14 @@ def prepare_zip():
 
     # make a new temp folder for the zipped file
     cur_time = datetime.now().strftime(time_format)
-    directory_name = './zipped/' + calling_user_id + '_' + cur_time
+    directory_name = os.path.join('zipped', (calling_user_id + '_' + cur_time))
     zip_name = directory_name + '.zip'
     os.makedirs(directory_name)
 
     # add image results to file
     for image in results:
         name = os.path.basename(image.directory_location)
-        copyfile(image.directory_location, directory_name + '/' + name)
+        copyfile(image.directory_location, os.path.join(directory_name, name))
 
     # zip file
     make_archive(directory_name, 'zip', directory_name)
@@ -535,7 +534,6 @@ def prepare_zip():
     rmtree(directory_name)
 
     # send zip over to user
-    # return send_file(zip_name, as_attachment=True)
     return jsonify(zip_name=os.path.basename(zip_name))
 
 
@@ -545,7 +543,7 @@ def download_zip(name):
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
 
-    return send_file('zipped\\' + name, as_attachment=True)
+    return send_file(os.path.join('zipped', name), as_attachment=True)
 
 
 '''
@@ -635,7 +633,7 @@ def download_image_csv(name):
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
 
-    return send_file('image_csv_files\\' + name, as_attachment=True)
+    return send_file(os.path.join('image_csv_files', name), as_attachment=True)
 
 
 @app.route('/download-flight-csv/<name>', methods=['GET', 'POST'])
@@ -644,7 +642,7 @@ def download_flight_csv(name):
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
 
-    return send_file('flight_csv_files\\' + name, as_attachment=True)
+    return send_file(os.path.join('flight_csv_files', name), as_attachment=True)
 
 '''
 Method to keep server files to a miniumum
@@ -663,7 +661,7 @@ def clean_csv():
 
         # remove file if it's more than 5 seconds old
         if time_difference > 5:
-            os.remove('image_csv_files/' + filename)
+            os.remove(os.path.join('image_csv_files', filename))
 
 '''
 POST
@@ -679,7 +677,7 @@ def upload_file():
         owner_id = request.form['owner_id']
         
         cur_time = datetime.now().strftime(time_format)
-        directory_name = './uploaded/' + owner_id + '_' + cur_time
+        directory_name = os.path.join('uploaded', (owner_id + '_' + cur_time))
         os.makedirs(directory_name)
 
         # get flight-based request args
@@ -694,7 +692,7 @@ def upload_file():
 
         # request.files contains all the files attached to the request
         for file in request.files.getlist('image'):
-            path = directory_name + '/' + file.filename
+            path = os.path.join(directory_name, file.filename)
             file.save(path)
 
         # build flight
@@ -720,7 +718,7 @@ def clean_zipped():
 
         # remove file if it's more than 10 seconds old
         if time_difference > 5:
-            os.remove('zipped/' + filename)
+            os.remove(os.path.join('zipped', filename))
 
 
 if __name__ == '__main__':
