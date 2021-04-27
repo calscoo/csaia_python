@@ -126,6 +126,7 @@ def query_image():
 
     if (shared == 1):
         flight_ids = shared_flight_manager.fetch_users_shared_flight_ids(calling_user_id)
+
     # get file path from database
     images = managers.image_manager.fetch_images(calling_user_id, image_ids, user_ids, flight_ids, None, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, None)
 
@@ -146,6 +147,7 @@ def query_image():
         })
 
     return jsonify(return_object)
+
 
 '''
 GET
@@ -241,6 +243,7 @@ def get_user_role():
 
     return jsonify(return_object)
 
+
 '''
 GET
 Returns the user's API key
@@ -261,6 +264,7 @@ def get_user_api_key():
     
     return jsonify(success=False)
 
+
 '''
 GET
 Generates a new API key for a user and returns it
@@ -280,6 +284,7 @@ def generate_user_api_key():
         return jsonify({'api_key' : api_key})
 
     return jsonify(success=False)
+
 
 '''
 GET
@@ -486,7 +491,7 @@ def remove_images():
 
 '''
 GET
-Sends the client a zipped file of images
+Builds the zip containing images and returns the name of the file to the client
 Images are fetched via "image_ids" request argument
 '''
 @app.route('/prepare-zip', methods=['GET', 'POST'])
@@ -509,34 +514,59 @@ def prepare_zip():
 
     results = managers.image_manager.fetch_images(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None, None, None)
 
-    # handle edge cases
-    if (len(results) == 0):
-        return jsonify(count=0)
-
-    if (len(results) > 50):
-        return jsonify(message='Query too broad')
-
-    # make a new temp folder for the zipped file
-    cur_time = datetime.now().strftime(time_format)
-    directory_name = os.path.join('zipped', (calling_user_id + '_' + cur_time))
-    zip_name = directory_name + '.zip'
-    os.makedirs(directory_name)
-
-    # add image results to file
+    # check if at least one image exists before making a directory
+    at_least_one = False
     for image in results:
-        name = os.path.basename(image.directory_location)
-        copyfile(image.directory_location, os.path.join(directory_name, name))
+        if os.path.exists(image.directory_location):
+            at_least_one = True
 
-    # zip file
-    make_archive(directory_name, 'zip', directory_name)
+    # return 0 if there aren't any results
+    if len(results) == 0:
+        return_object = {
+            'result': 0
+        }
+    # return 50 if there's more than 50 results
+    elif len(results) > 50:
+        return_object = {
+            'result': 50
+        }
+    # return true and the zip folder if there's at least one existing image
+    elif at_least_one:
+        # make a new temp folder for the zipped file
+        cur_time = datetime.now().strftime(time_format)
+        directory_name = os.path.join('zipped', (calling_user_id + '_' + cur_time))
+        zip_name = directory_name + '.zip'
+        os.makedirs(directory_name)
 
-    # delete unzipped directory
-    rmtree(directory_name)
+        # add image results to file
+        for image in results:
+            name = os.path.basename(image.directory_location)
+            if os.path.exists(image.directory_location):
+                copyfile(image.directory_location, os.path.join(directory_name, name))
 
-    # send zip over to user
-    return jsonify(zip_name=os.path.basename(zip_name))
+        # zip file
+        make_archive(directory_name, 'zip', directory_name)
+
+        # delete unzipped directory
+        rmtree(directory_name)
+
+        # send zip over to user
+        return_object = {
+            'result': True,
+            'zip_name': os.path.basename(zip_name)
+        }
+    # return false for all other cases
+    else:
+        return_object = {
+            'result': False,
+        }
+    return jsonify(return_object)
 
 
+'''
+GET
+Returns the specified zip file to the client
+'''
 @app.route('/download-zip/<name>', methods=['GET', 'POST'])
 def download_zip(name):
     api_key = request.args.get('api_key')
@@ -548,8 +578,7 @@ def download_zip(name):
 
 '''
 GET
-Sends the client a csv file of image metadata from
-the selected images.
+Builds the image csv file containing metadata and returns the name of the file to the client
 Images are fetched via "image_ids" request argument
 '''
 @app.route('/prepare-image-csv', methods=['GET', 'POST'])
@@ -589,8 +618,7 @@ def prepare_image_csv():
 
 '''
 GET
-Sends the client a csv file of flight metadata from
-the selected images.
+Builds the flight csv file containing metadata and returns the name of the file to the client
 Flights are fetched via "flight_ids" request argument
 '''
 @app.route('/prepare-flight-csv', methods=['GET', 'POST'])
@@ -627,6 +655,10 @@ def prepare_flight_csv():
     return jsonify(csv_name=os.path.basename(csv_name))
 
 
+'''
+GET
+Returns the specified image csv file to the client
+'''
 @app.route('/download-image-csv/<name>', methods=['GET', 'POST'])
 def download_image_csv(name):
     api_key = request.args.get('api_key')
@@ -636,6 +668,10 @@ def download_image_csv(name):
     return send_file(os.path.join('image_csv_files', name), as_attachment=True)
 
 
+'''
+GET
+Returns the specified flight csv file to the client
+'''
 @app.route('/download-flight-csv/<name>', methods=['GET', 'POST'])
 def download_flight_csv(name):
     api_key = request.args.get('api_key')
@@ -644,8 +680,9 @@ def download_flight_csv(name):
 
     return send_file(os.path.join('flight_csv_files', name), as_attachment=True)
 
+
 '''
-Method to keep server files to a miniumum
+Method to keep server files to a minimum
 
 Deletes all files in the csv folder that
 were made more than 10 seconds ago
@@ -662,6 +699,7 @@ def clean_csv():
         # remove file if it's more than 5 seconds old
         if time_difference > 5:
             os.remove(os.path.join('image_csv_files', filename))
+
 
 '''
 POST
@@ -702,7 +740,7 @@ def upload_file():
 
 
 '''
-Method to keep server files to a miniumum
+Method to keep server files to a minimum
 
 Deletes all files in the zipped folder that
 were made more than 10 seconds ago
@@ -721,5 +759,6 @@ def clean_zipped():
             os.remove(os.path.join('./zipped', filename))
 
 
+# This starts the server
 if __name__ == '__main__':
    app.run(host='0.0.0.0', port=5000)

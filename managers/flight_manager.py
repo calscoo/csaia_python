@@ -136,9 +136,7 @@ def remove_flight(flight_id):
         The id of the flight to remove
     """
     flight_to_delete = flight_dao.select_flights('id', [flight_id], None, None, None, None, None, None, None, None, None, None, None, None, None)
-    print(flight_to_delete)
     flight_id_to_delete = None if len(flight_to_delete) == 0 else flight_to_delete[0][0]
-    print(flight_id_to_delete)
     flight_dao.delete_flight(flight_id_to_delete)
 
 
