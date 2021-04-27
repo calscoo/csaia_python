@@ -136,7 +136,7 @@ def delete_flight(flight_id):
 
 def update_flight(id, flight):
     """
-    Deletes a flight containing the ID of the flight and the name of the flight
+    Updates a flight containing the ID of the flight and the name of the flight
 
     Parameters
     ----------

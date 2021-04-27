@@ -33,6 +33,18 @@ def fix_quotes(val):
 
 
 def images_rs_to_object_list(rs):
+    """
+    Takes all given image data and stores passed data into a list
+
+    Parameters
+    ----------
+    rs : selection of images
+        The images selected to be condensed
+
+    Returns
+    -------
+    images : a list of images
+    """
     images = []
     if rs is not None:
         for tuple in rs:
@@ -149,6 +161,44 @@ def upload_images(images):
 
 
 def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash):
+    """
+    Fetches image metadata from the database based
+    on the user's passed values.
+
+    Parameters
+    ----------
+    calling_user_id : integer
+        The users ID
+    image_ids : integer
+        The ids of the individual images
+    user_ids : integer
+        The ids of the user's images
+    flight_ids : integer
+        The ids of the flights
+    directory_location : string
+        The file path for where the images are stored
+    extensions : string
+        The image type
+    datetime_range : datetime
+        The range from when a flight started and from where it ended
+    latitude_range : decimal
+        The range from where the flight started and from where it ended latitudinally
+    longitude_range : datetime
+        The range from where the flight started and from where it ended longitudinally
+    altidute_range : decimal
+        The range from how high the images were taken
+    make : string
+        The make of the drone/camera
+    model : string
+        The model of the drone/camera
+    md5_hash : string
+        The hashing code of the image
+
+    Returns
+    -------
+    images : list of objects.image
+        a list of images
+    """
     rs = image_dao.select_images('*', image_ids, user_ids, flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash)
     images = images_rs_to_object_list(rs)
     requested_flight_ids = set()
@@ -210,6 +260,16 @@ def remove_images(image_ids, admin_id, admin_pass):
 
 
 def image_data_to_csv(file_name, images):
+    """
+    Takes image data and inserts the data into a CSV file
+
+    Parameters
+    ----------
+    file_name : string
+        The name of the file the user wishes
+    images : image object 
+        The images the user wants data on
+    """
     images_to_insert = image_objects_to_insert_tuple(images)
     with open('image_csv_files/{}.csv'.format(file_name),'w', newline='') as out:
         csv_out = csv.writer(out)

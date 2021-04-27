@@ -63,6 +63,18 @@ def calculate_derived_flight_metadata(images):
 
 
 def flights_rs_to_object_list(rs):
+    """
+    Takes all given flight data and stores passed data into a list
+
+    Parameters
+    ----------
+    rs : selection of flights
+        The flights selected to be condensed
+
+    Returns
+    -------
+    flights: a list of flights
+    """
     flights = []
     if rs is not None:
         for tuple in rs:
@@ -72,6 +84,29 @@ def flights_rs_to_object_list(rs):
 
 
 def build_flight(owner_id, path, flight_name, manual_notes, field_name, crop_name, privacy, shared_users):
+    """
+    Creates a flight given by the user and the scraped flight image data
+
+    Parameters
+    ----------
+    owner_id : integer
+        The user's id 
+    path : string
+        The location of the directory where the images are at
+    flight_name : string
+        The name of the flight
+    manual_notes : string
+        Any additional notes the user wishes to add
+    field_name : string
+        The name of the field where the data is taken from
+    crop_name : string
+        The name of the crop from where the data is taken from
+    privacy : integer 
+        The number code to determine what privacy setting the flight is
+    shared_users : integer
+        The ids of other users who can see this flight
+
+    """
     images = image_manager.parse_image_metadata(path)
     flight_metadata = calculate_derived_flight_metadata(images)
     address = flight_address(flight_metadata.average_latitude, flight_metadata.average_longitude)
@@ -111,6 +146,55 @@ def build_flight(owner_id, path, flight_name, manual_notes, field_name, crop_nam
 
 
 def fetch_flights(calling_user_id, flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model):
+    """
+    Fetches flights from the database based
+    on the user's passed values.
+
+    Parameters
+    ----------
+    calling_user_id : string or None
+        User's own id
+    flight_ids : list[int]
+        The optional list of flight ids
+    user_ids : list[int]
+        The optional list of user ids
+    flight_name : string
+        The optional flight_name
+        NOTE: Uses a LIKE comparision, full flight_name is not necessary, case IN-sensitive
+    manual_notes : string
+        The optional manual_notes
+        NOTE: Uses a LIKE comparision, full manual_notes is not necessary, case IN-sensitive
+    address : string
+        The optional address
+        NOTE: Uses a LIKE comparision, full address is not necessary, case IN-sensitive
+    field_name : string
+        The optional field_name
+        NOTE: Uses a LIKE comparision, full field_name is not necessary, case IN-sensitive
+    crop_name : string
+        The optional crop_name
+        NOTE: Uses a LIKE comparision, full crop_name is not necessary, case IN-sensitive
+    start_datetime_range : objects.range
+        The optional range of datetimes for the start of the flight
+    end_datetime_range : objects.range
+        The optional range of datetimes for the end of the flight
+    latitude_range : objects.range
+        The optional range of latitudes
+    longitude_range : objects.range
+        The optional range of longitudes
+    altitude_range : objects.range
+        The optional range of altitudes
+    make : string
+        The optional hardware make
+        NOTE: Uses a LIKE comparision, full hardware make is not necessary, case IN-sensitive
+    model : string
+        The optional hardware model
+        NOTE: Uses a LIKE comparision, full hardware model is not necessary, case IN-sensitive
+
+    Returns
+    -------
+    flights : set(flights)
+        returns a set of flights
+    """
     rs = flight_dao.select_flights('*', flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model)
     flights = flights_rs_to_object_list(rs)
     flights_to_remove = set()
@@ -141,6 +225,19 @@ def remove_flight(flight_id):
 
 
 def flight_data_to_tuple(flight):
+    """
+    Takes a single flight and condenses it into a tuple
+
+    Parameters
+    ----------
+    flight : flight object
+        A singular flight
+
+    Returns
+    -------
+    tuple_flights: a flight tuple
+        A flight organized into a tuple
+    """
     tuple_flights = []
     for f in flight:
         tuple_flights.append((f.id, f.user_id, f.flight_name, f.manual_notes, f.address, f.field_name, f.crop_name, str(f.average_latitude), str(f.average_longitude), str(f.average_altitude), str(f.flight_start_time), str(f.flight_end_time), f.hardware_make, f.hardware_model, str(f.privacy)))
@@ -148,6 +245,22 @@ def flight_data_to_tuple(flight):
 
 
 def flight_address(latitude, longitude):
+    """
+    Takes the latitude and longitude of a flight and
+    returns the address of the specified coordinates
+
+    Parameters
+    ----------
+    latitude : decimal
+        The latitudinal coordinates of a flight (North to South)
+    longitude : decimal
+        The longitudinal coordinates of a flight (East to West)
+
+    Returns
+    -------
+    address: string
+        The exact location in a readable manner
+    """
     address = None
     if latitude is not None and longitude is not None:
         address_coordinates = "{}, {}".format(latitude, longitude)
@@ -158,6 +271,17 @@ def flight_address(latitude, longitude):
 
 
 def flight_data_to_csv(file_name, flights):
+    """
+    Takes a flight and orgainizes it into a CSV file
+
+    Parameters
+    ----------
+    file_name : string
+        The name of the file the user wishes
+    flights : flight object
+        The flights the user wants data on
+
+    """
     flights_to_insert = flight_data_to_tuple(flights)
     with open('flight_csv_files/{}.csv'.format(file_name),'w', newline='') as out:
         csv_out = csv.writer(out)
