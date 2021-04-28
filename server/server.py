@@ -1,10 +1,11 @@
 from shutil import copyfile, make_archive, rmtree
-from flask import Flask, json, jsonify, request
+from flask import Flask, jsonify, request
 from flask.helpers import send_file
 from datetime import datetime
 from flask_cors import CORS
 import os, sys
 
+# ensures all other files are visibile in this file
 sys.path.append('../')
 
 # external scripts must be imported after the previous line
@@ -16,12 +17,13 @@ import managers.flight_manager
 import managers.users_manager
 from objects.range import range as Range
 
+# intialize Flask application
 app = Flask(__name__)
 
 # time format for use in file naming
 time_format = '%Y%m%d-%H%M%S'
 
-# CORS policies need to be modified, this isn't secure
+# CORS policies may need to be modified based on deployment configuration
 cors = CORS(app, resources={r'/*': {"origins": '*'}})
 app.config['CORS_HEADERS'] = 'Content-Type'
 
@@ -30,18 +32,17 @@ app.config['ENV'] = 'development'
 app.config['DEBUG'] = True
 app.config['TESTING'] = True
 
-
 def float_or_none(val):
     return None if val is None else float(val)
 
-
-'''
-GET
-Sends the client a list of objects that match
-multiple query parameters obtained through the request parameters
-'''
 @app.route('/query', methods=['GET', 'POST'])
 def query_image():
+    """
+    GET
+    Sends the client a list of objects that match
+    multiple query parameters obtained through the request parameters
+    """
+
     # unpack request parameters
     calling_user_id = str(request.args.get('calling_user_id'))
 
@@ -148,14 +149,14 @@ def query_image():
 
     return jsonify(return_object)
 
-
-'''
-GET
-Sends the client a list of user objects
-multiple query parameters obtained through the request parameters
-'''
 @app.route('/fetch-all-users', methods=['GET', 'POST'])
 def fetch_all_users():
+    """
+    GET
+    Sends the client a list of user objects
+    multiple query parameters obtained through the request parameters
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -175,13 +176,13 @@ def fetch_all_users():
 
     return jsonify(return_object)
 
-
-'''
-GET
-Sends the client an email value to check if it exists in the system
-'''
 @app.route('/does-user-exist', methods=['GET', 'POST'])
 def does_user_exist():
+    """
+    GET
+    Sends the client an email value to check if it exists in the system
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -196,13 +197,13 @@ def does_user_exist():
 
     return jsonify(return_object)
 
-
-'''
-GET
-Sends the client and email and password to attempt a login
-'''
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """
+    GET
+    Sends the client and email and password to attempt a login
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -222,13 +223,13 @@ def login():
 
     return jsonify(return_object)
 
-
-'''
-GET
-Returns the user's role
-'''
 @app.route('/get-user-role', methods=['GET', 'POST'])
 def get_user_role():
+    """
+    GET
+    Returns the user's role
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -243,13 +244,13 @@ def get_user_role():
 
     return jsonify(return_object)
 
-
-'''
-GET
-Returns the user's API key
-'''
 @app.route('/get-user-api-key', methods=['GET', 'POST'])
 def get_user_api_key():
+    """
+    GET
+    Returns the user's API key
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -264,13 +265,13 @@ def get_user_api_key():
     
     return jsonify(success=False)
 
-
-'''
-GET
-Generates a new API key for a user and returns it
-'''
 @app.route('/generate-user-api-key', methods=['GET', 'POST'])
 def generate_user_api_key():
+    """
+    GET
+    Generates a new API key for a user and returns it
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -285,15 +286,15 @@ def generate_user_api_key():
 
     return jsonify(success=False)
 
-
-'''
-GET
-Sends the client a list of their own flights.
-user_id is determined by the calling_user_id
-request parameter.
-'''
 @app.route('/get-users-flights', methods=['GET', 'POST'])
 def get_users_flights():
+    """
+    GET
+    Sends the client a list of their own flights.
+    user_id is determined by the calling_user_id
+    request parameter.
+    """
+
     api_key = request.args.get('api_key')
     calling_user_id = request.args.get('calling_user_id')
 
@@ -320,15 +321,15 @@ def get_users_flights():
 
     return jsonify(return_object)
 
-
-'''
-GET
-Sends the client a list of flight images that are shared
-with them. user_id is obtained from
-the request parameter calling_user_id.
-'''
 @app.route('/get-users-shared-flights', methods=['GET', 'POST'])
 def get_users_shared_flights():
+    """
+    GET
+    Sends the client a list of flight images that are shared
+    with them. user_id is obtained from
+    the request parameter calling_user_id.
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -355,13 +356,13 @@ def get_users_shared_flights():
 
     return jsonify(return_object)
 
-
-'''
-POST
-Allows the admin to update a users role
-'''
 @app.route('/update-user-role', methods=['GET', 'POST'])
 def update_user_role():
+    """
+    POST
+    Allows the admin to update a users role
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -381,13 +382,13 @@ def update_user_role():
         }
         return jsonify(return_object)
 
-
-'''
-POST
-Allows an admin to reset a users password
-'''
 @app.route('/admin-update-user-pass', methods=['GET', 'POST'])
 def update_user_pass():
+    """
+    POST
+    Allows an admin to reset a users password
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -407,13 +408,13 @@ def update_user_pass():
         }
         return jsonify(return_object)
 
-
-'''
-POST
-Allows a user to update their password
-'''
 @app.route('/update-user-pass', methods=['GET', 'POST'])
 def admin_update_user_pass():
+    """
+    POST
+    Allows a user to update their password
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -432,13 +433,13 @@ def admin_update_user_pass():
         }
         return jsonify(return_object)
 
-
-'''
-POST
-Allows the admin to create a user
-'''
 @app.route('/create-user', methods=['GET', 'POST'])
 def create_user():
+    """
+    POST
+    Allows the admin to create a user
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -459,13 +460,13 @@ def create_user():
         }
         return jsonify(return_object)
 
-
-'''
-POST
-Allows the admin to create a user
-'''
 @app.route('/remove-images', methods=['GET', 'POST'])
 def remove_images():
+    """
+    POST
+    Allows the admin to create a user
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -488,14 +489,14 @@ def remove_images():
         }
         return jsonify(return_object)
 
-
-'''
-GET
-Builds the zip containing images and returns the name of the file to the client
-Images are fetched via "image_ids" request argument
-'''
 @app.route('/prepare-zip', methods=['GET', 'POST'])
 def prepare_zip():
+    """
+    GET
+    Builds the zip containing images and returns the name of the file to the client
+    Images are fetched via "image_ids" request argument
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -562,27 +563,27 @@ def prepare_zip():
         }
     return jsonify(return_object)
 
-
-'''
-GET
-Returns the specified zip file to the client
-'''
 @app.route('/download-zip/<name>', methods=['GET', 'POST'])
 def download_zip(name):
+    """
+    GET
+    Returns the specified zip file to the client
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
 
     return send_file(os.path.join('zipped', name), as_attachment=True)
 
-
-'''
-GET
-Builds the image csv file containing metadata and returns the name of the file to the client
-Images are fetched via "image_ids" request argument
-'''
 @app.route('/prepare-image-csv', methods=['GET', 'POST'])
 def prepare_image_csv():
+    """
+    GET
+    Builds the image csv file containing metadata and returns the name of the file to the client
+    Images are fetched via "image_ids" request argument
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -615,14 +616,14 @@ def prepare_image_csv():
     # return send_file(zip_name, as_attachment=True)
     return jsonify(csv_name=os.path.basename(csv_name))
 
-
-'''
-GET
-Builds the flight csv file containing metadata and returns the name of the file to the client
-Flights are fetched via "flight_ids" request argument
-'''
 @app.route('/prepare-flight-csv', methods=['GET', 'POST'])
 def prepare_flight_csv():
+    """
+    GET
+    Builds the flight csv file containing metadata and returns the name of the file to the client
+    Flights are fetched via "flight_ids" request argument
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -654,40 +655,40 @@ def prepare_flight_csv():
     # return send_file(zip_name, as_attachment=True)
     return jsonify(csv_name=os.path.basename(csv_name))
 
-
-'''
-GET
-Returns the specified image csv file to the client
-'''
 @app.route('/download-image-csv/<name>', methods=['GET', 'POST'])
 def download_image_csv(name):
+    """
+    GET
+    Returns the specified image csv file to the client
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
 
     return send_file(os.path.join('image_csv_files', name), as_attachment=True)
 
-
-'''
-GET
-Returns the specified flight csv file to the client
-'''
 @app.route('/download-flight-csv/<name>', methods=['GET', 'POST'])
 def download_flight_csv(name):
+    """
+    GET
+    Returns the specified flight csv file to the client
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
 
     return send_file(os.path.join('flight_csv_files', name), as_attachment=True)
 
-
-'''
-Method to keep server files to a minimum
-
-Deletes all files in the csv folder that
-were made more than 10 seconds ago
-'''
 def clean_csv():
+    """
+    Method to keep server files to a minimum
+
+    Deletes all files in the csv folder that
+    were made more than 10 seconds ago
+    """
+
     for filename in os.listdir('image_csv_files'):
         # parse out the time this file was created via name
         timestamp = filename.split('_')[1].split('.csv')[0]
@@ -700,13 +701,13 @@ def clean_csv():
         if time_difference > 5:
             os.remove(os.path.join('image_csv_files', filename))
 
-
-'''
-POST
-Allows the client to upload flights
-'''
 @app.route('/upload-flight', methods=['GET', 'POST'])
 def upload_file():
+    """
+    POST
+    Allows the client to upload flights
+    """
+
     api_key = request.args.get('api_key')
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
@@ -738,14 +739,14 @@ def upload_file():
         
         return jsonify(success=True)
 
-
-'''
-Method to keep server files to a minimum
-
-Deletes all files in the zipped folder that
-were made more than 10 seconds ago
-'''
 def clean_zipped():
+    """
+    Method to keep server files to a minimum
+
+    Deletes all files in the zipped folder that
+    were made more than 10 seconds ago
+    """
+
     for filename in os.listdir('zipped'):
         # parse out the time this file was created via name
         timestamp = filename.split('_')[1].split('.zip')[0]
@@ -757,7 +758,6 @@ def clean_zipped():
         # remove file if it's more than 10 seconds old
         if time_difference > 5:
             os.remove(os.path.join('./zipped', filename))
-
 
 # This starts the server
 if __name__ == '__main__':

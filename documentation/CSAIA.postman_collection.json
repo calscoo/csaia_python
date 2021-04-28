@@ -1,0 +1,882 @@
+{
+	"info": {
+		"_postman_id": "8ce78bd0-b0f1-41fd-91f2-e46bcd5ad4c1",
+		"name": "CSAIA",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Query",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/query?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2&image_ids=null&user_ids=null&flight_ids=1, 2&extensions=null&datetime_range=null&latitude_range=null&longitude_range=null&altitude_range=null&make=null&model=null&shared=null",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"query"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						},
+						{
+							"key": "image_ids",
+							"value": "null"
+						},
+						{
+							"key": "user_ids",
+							"value": "null"
+						},
+						{
+							"key": "flight_ids",
+							"value": "1, 2"
+						},
+						{
+							"key": "extensions",
+							"value": "null"
+						},
+						{
+							"key": "datetime_range",
+							"value": "null"
+						},
+						{
+							"key": "latitude_range",
+							"value": "null"
+						},
+						{
+							"key": "longitude_range",
+							"value": "null"
+						},
+						{
+							"key": "altitude_range",
+							"value": "null"
+						},
+						{
+							"key": "make",
+							"value": "null"
+						},
+						{
+							"key": "model",
+							"value": "null"
+						},
+						{
+							"key": "shared",
+							"value": "null"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Fetch All Users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/fetch-all-users?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"fetch-all-users"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Does User Exist",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/does-user-exist?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2&email=user1",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"does-user-exist"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						},
+						{
+							"key": "email",
+							"value": "user1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/login?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2&email=user1&password=password!",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"login"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						},
+						{
+							"key": "email",
+							"value": "user1"
+						},
+						{
+							"key": "password",
+							"value": "password!"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User Role",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/get-user-role?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2&user_id=10",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"get-user-role"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						},
+						{
+							"key": "user_id",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User API Key",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/get-user-api-key?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2&user_id=10&password=password!",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"get-user-api-key"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						},
+						{
+							"key": "user_id",
+							"value": "10"
+						},
+						{
+							"key": "password",
+							"value": "password!"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Generate API Key",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/generate-user-api-key?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2&user_id=10&password=password!",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"generate-user-api-key"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						},
+						{
+							"key": "user_id",
+							"value": "10"
+						},
+						{
+							"key": "password",
+							"value": "password!"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User's Flights",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/get-users-flights?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2&calling_user_id=10",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"get-users-flights"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						},
+						{
+							"key": "calling_user_id",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User's Shared Flights",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/get-users-flights?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2&calling_user_id=10",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"get-users-flights"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						},
+						{
+							"key": "calling_user_id",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User Role",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "admin_id",
+							"value": "10",
+							"type": "text"
+						},
+						{
+							"key": "admin_pass",
+							"value": "password!",
+							"type": "text"
+						},
+						{
+							"key": "user_id",
+							"value": "11",
+							"type": "text"
+						},
+						{
+							"key": "role",
+							"value": "2",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/update-user-role?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"update-user-role"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Admin Update User Pass",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "admin_id",
+							"value": "10",
+							"type": "text"
+						},
+						{
+							"key": "admin_pass",
+							"value": "password!",
+							"type": "text"
+						},
+						{
+							"key": "user_id",
+							"value": "11",
+							"type": "text"
+						},
+						{
+							"key": "new_pass",
+							"value": "NewPassword",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/admin-update-user-pass?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"admin-update-user-pass"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User Pass",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "user_id",
+							"value": "11",
+							"type": "text"
+						},
+						{
+							"key": "old_pass",
+							"value": "NewPassword",
+							"type": "text"
+						},
+						{
+							"key": "new_pass",
+							"value": "NewPassword2",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/update-user-pass?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"update-user-pass"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "admin_id",
+							"value": "10",
+							"type": "text"
+						},
+						{
+							"key": "admin_pass",
+							"value": "password!",
+							"type": "text"
+						},
+						{
+							"key": "email",
+							"value": "newuser@gmail.com",
+							"type": "text"
+						},
+						{
+							"key": "password",
+							"value": "password",
+							"type": "text"
+						},
+						{
+							"key": "role",
+							"value": "2",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/create-user?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"create-user"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Remove Images",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "admin_id",
+							"value": "10",
+							"type": "text"
+						},
+						{
+							"key": "admin_pass",
+							"value": "password!",
+							"type": "text"
+						},
+						{
+							"key": "image_ids",
+							"value": "45,36",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/remove-images?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"remove-images"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Prepare Zip",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/prepare-zip?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2&image_ids=46,47&calling_user_id=10",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"prepare-zip"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						},
+						{
+							"key": "image_ids",
+							"value": "46,47"
+						},
+						{
+							"key": "calling_user_id",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Download Zip",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/download-zip/10_20210427-210913.zip?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"download-zip",
+						"10_20210427-210913.zip"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Prepare Image CSV",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/prepare-image-csv?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2&image_ids=46,47&calling_user_id=10",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"prepare-image-csv"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						},
+						{
+							"key": "image_ids",
+							"value": "46,47"
+						},
+						{
+							"key": "calling_user_id",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Prepare Flight CSV",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/prepare-flight-csv?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2&flight_ids=16&calling_user_id=10",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"prepare-flight-csv"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						},
+						{
+							"key": "flight_ids",
+							"value": "16"
+						},
+						{
+							"key": "calling_user_id",
+							"value": "10"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Download Image CSV",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/download-image-csv/image_20210427-211057.csv?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"download-image-csv",
+						"image_20210427-211057.csv"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Download Flight CSV",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://127.0.0.1:5000/download-flight-csv/flight_20210427-211233.csv?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"download-flight-csv",
+						"flight_20210427-211233.csv"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Upload Flight",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "image",
+							"type": "file",
+							"src": [
+								"/C:/Users/benha/Desktop/DJI_0437.JPG",
+								"/C:/Users/benha/Desktop/DJI_0438.JPG"
+							]
+						},
+						{
+							"key": "owner_id",
+							"value": "10",
+							"type": "text"
+						},
+						{
+							"key": "flight_name",
+							"value": "Test Flight Name",
+							"type": "text"
+						},
+						{
+							"key": "notes",
+							"value": "Test Notes",
+							"type": "text"
+						},
+						{
+							"key": "field_name",
+							"value": "Test Field Name",
+							"type": "text"
+						},
+						{
+							"key": "crop",
+							"value": "Test Crop",
+							"type": "text"
+						},
+						{
+							"key": "privacy_value",
+							"value": "1",
+							"type": "text"
+						},
+						{
+							"key": "shared_users",
+							"value": "10",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://127.0.0.1:5000/upload-flight?api_key=vsRV7QBUP3EQGaD4wPbMjzUC2",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "5000",
+					"path": [
+						"upload-flight"
+					],
+					"query": [
+						{
+							"key": "api_key",
+							"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "api_key",
+			"value": "vsRV7QBUP3EQGaD4wPbMjzUC2"
+		}
+	]
+}
