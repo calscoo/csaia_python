@@ -14,7 +14,7 @@ def share_flight(flight_id, user_ids):
     ----------
     flight_id : integer
         The id of the flight
-    user_ids : integer
+    user_ids : list[int]
         The ids of the users
     """
     valid_users = users_manager.fetch_users(user_ids, None, None, None)

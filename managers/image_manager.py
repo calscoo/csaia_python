@@ -11,6 +11,7 @@ from objects.image import image
 from daos import image_dao
 from GPSPhoto import gpsphoto
 
+# the system only allows for jpeg and tiff images
 supported_formats = ('.jpg', '.jpeg', '.tif', '.tiff')
 
 
@@ -147,7 +148,7 @@ def upload_images(images):
 
     Parameters
     ----------
-    images : list of objects.image
+    images : list[image]
         the images to upload
 
     Returns
@@ -169,23 +170,23 @@ def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_loc
     ----------
     calling_user_id : integer
         The users ID
-    image_ids : integer
+    image_ids : list[int]
         The ids of the individual images
-    user_ids : integer
+    user_ids : list[int]
         The ids of the user's images
-    flight_ids : integer
+    flight_ids : list[int]
         The ids of the flights
     directory_location : string
         The file path for where the images are stored
-    extensions : string
+    extensions : list[string]
         The image type
-    datetime_range : datetime
+    datetime_range : range
         The range from when a flight started and from where it ended
-    latitude_range : decimal
+    latitude_range : range
         The range from where the flight started and from where it ended latitudinally
-    longitude_range : datetime
+    longitude_range : range
         The range from where the flight started and from where it ended longitudinally
-    altidute_range : decimal
+    altidute_range : range
         The range from how high the images were taken
     make : string
         The make of the drone/camera
@@ -199,15 +200,23 @@ def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_loc
     images : list of objects.image
         a list of images
     """
+    # fetch the images result from the database
     rs = image_dao.select_images('*', image_ids, user_ids, flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash)
+    # cast the database result to image objects
     images = images_rs_to_object_list(rs)
+    # create an emtpy set of requested flight ids to access
     requested_flight_ids = set()
+    # add all flight ids from the requested images to the requested flight ids set
     for image in images:
         requested_flight_ids.add(image.flight_id)
+    # fetch the allowed flights, passing in the calling user id ensures we only got back flights the user is permitted to view
     allowed_flights = flight_manager.fetch_flights(calling_user_id, list(requested_flight_ids), None, None, None, None, None, None, None, None, None, None, None, None, None)
+    # create an emtpy set of allowed flight ids
     allowed_flight_ids = set()
+    # added the allowed flight ids to the allowed flight ids set
     for allowed_flight in allowed_flights:
         allowed_flight_ids.add(allowed_flight.id)
+    # iterate through the requested images and only return those with permitted flights
     return_images = []
     for image in images:
         if image.flight_id in allowed_flight_ids:
@@ -227,7 +236,7 @@ def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_loc
 def remove_images(image_ids, admin_id, admin_pass):
     """
     Removes all the images containing the passed ids
-    NOTE: This will also remove images flight if the image deletion leaves a flight without images
+    NOTE: This will also remove the images flight if the image deletion leaves a flight without images
     NOTE: Checks if the images exist before deletion
 
     Parameters
@@ -236,12 +245,12 @@ def remove_images(image_ids, admin_id, admin_pass):
         The ids of the images to remove
     """
     assert admin_id and admin_pass is not None
+    # fetch the admin and ensure they're password matches before continuing
     admin_user = users_manager.fetch_users([admin_id], None, None, None)[0]
     if password_manager.check_password(admin_pass, admin_user.password):
         flight_ids = set()
         image_ids_to_delete = set()
-        images_to_delete = image_dao.select_images('id, flight_id', image_ids, None, None, None, None, None, None, None,
-                                                   None, None, None, None)
+        images_to_delete = image_dao.select_images('id, flight_id', image_ids, None, None, None, None, None, None, None, None, None, None, None)
         if images_to_delete is not None and len(images_to_delete) > 0:
             for image in images_to_delete:
                 flight_ids.add(image[1])
@@ -250,8 +259,7 @@ def remove_images(image_ids, admin_id, admin_pass):
             for flight_id in flight_ids:
                 if flight_id is not None:
                     flight_remaining_images = \
-                    image_dao.select_images('count(*)', None, None, [flight_id], None, None, None, None, None, None,
-                                            None, None, None)[0][0]
+                    image_dao.select_images('count(*)', None, None, [flight_id], None, None, None, None, None, None, None, None, None)[0][0]
                     if flight_remaining_images == 0:
                         flight_manager.remove_flight(flight_id)
             return True

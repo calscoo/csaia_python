@@ -25,7 +25,7 @@ def create_user(email, password, role, admin_id, admin_pass):
         The user's email
     password : string
         The user's password
-    role : integer
+    role : roles
         The users role in the application.
     admin_id : integer
         The user's id if an admin
@@ -55,7 +55,7 @@ def update_user_role(user_id, role, admin_id, admin_pass):
     ----------
     user_id : integer
         The id of the user
-    role : integer
+    role : roles
         The users role in the application.
     admin_id : integer
         The user's admin id
@@ -134,7 +134,7 @@ def admin_update_user_pass(user_id, new_pass, admin_id, admin_pass):
 
 def fetch_user_role(id):
     """
-    Fetches users based on the passed id
+    Fetches users role based on the passed id
 
     Parameters
     ----------
@@ -256,13 +256,13 @@ def fetch_users(ids, email, password, role):
 
     Parameters
     ----------
-    ids : integer
+    ids : list[int]
         The ids of the users
     email : string
         The email of the users
     password : string
         The password of the users
-    role : integer
+    role : roles
         The role of the users
 
     Returns

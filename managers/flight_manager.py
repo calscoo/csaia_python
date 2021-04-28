@@ -59,7 +59,8 @@ def calculate_derived_flight_metadata(images):
     if times.__len__() > 0:
         start_time = times[0]
         end_time = times[-1]
-    return flight_derived_metadata(average_latitude, average_longitude, average_altitude, start_time, end_time, make, model)
+    return flight_derived_metadata(average_latitude, average_longitude, average_altitude, start_time, end_time, make,
+                                   model)
 
 
 def flights_rs_to_object_list(rs):
@@ -79,7 +80,9 @@ def flights_rs_to_object_list(rs):
     if rs is not None:
         for tuple in rs:
             if tuple is not None:
-                flights.append(flight(tuple[0], tuple[1], tuple[2], tuple[3], tuple[4], tuple[5], tuple[6], tuple[7], tuple[8], tuple[9], tuple[10], tuple[11], tuple[12], tuple[13], privacy_enum(tuple[14])))
+                flights.append(
+                    flight(tuple[0], tuple[1], tuple[2], tuple[3], tuple[4], tuple[5], tuple[6], tuple[7], tuple[8],
+                           tuple[9], tuple[10], tuple[11], tuple[12], tuple[13], privacy_enum(tuple[14])))
     return flights
 
 
@@ -101,51 +104,47 @@ def build_flight(owner_id, path, flight_name, manual_notes, field_name, crop_nam
         The name of the field where the data is taken from
     crop_name : string
         The name of the crop from where the data is taken from
-    privacy : integer 
+    privacy : privacy
         The number code to determine what privacy setting the flight is
-    shared_users : integer
+    shared_users : list[int]
         The ids of other users who can see this flight
 
     """
+    # parse the image metadata into images objects
     images = image_manager.parse_image_metadata(path)
+    # parse the flight metadata into flight metadata objects
     flight_metadata = calculate_derived_flight_metadata(images)
+    # calculate the common address
     address = flight_address(flight_metadata.average_latitude, flight_metadata.average_longitude)
+    # prepare the flight record for database insert
     flight_records = [(owner_id, flight_name, manual_notes, address, field_name,
-        crop_name, flight_metadata.average_latitude, flight_metadata.average_longitude, flight_metadata.average_altitude,
-        flight_metadata.flight_start_time, flight_metadata.flight_end_time, flight_metadata.hardware_make,
-        flight_metadata.hardware_model, privacy.value)]
+                       crop_name, flight_metadata.average_latitude, flight_metadata.average_longitude,
+                       flight_metadata.average_altitude,
+                       flight_metadata.flight_start_time, flight_metadata.flight_end_time,
+                       flight_metadata.hardware_make,
+                       flight_metadata.hardware_model, privacy.value)]
 
+    # insert the flight record into the database
     flight_id = flight_dao.insert_flights(flight_records)[0]
 
+    # if the flight is shared, insert the shared records
     if privacy == privacy_enum.Shared:
         if owner_id in shared_users:
             shared_users.remove(owner_id)
         shared_flight_manager.share_flight(flight_id, shared_users)
 
+    # set the flight and owner id on the image objects
     for image in images:
         image.flight_id = flight_id
         image.user_id = owner_id
-    ids = image_manager.upload_images(images)
-    # return {
-    #     'flight-id': flight_id,
-    #     'user-id': user_id,
-    #     'flight-name': flight_name,
-    #     'manual-notes': manual_notes,
-    #     'address': address,
-    #     'field-name': field_name,
-    #     'crop-name': crop_name,
-    #     'average-latitude': flight_metadata.average_latitude,
-    #     'average-longitude': flight_metadata.average_longitude,
-    #     'average-altitude': flight_metadata.average_altitude,
-    #     'start-time': flight_metadata.flight_start_time,
-    #     'end-time': flight_metadata.flight_end_time,
-    #     'make': flight_metadata.hardware_make,
-    #     'model': flight_metadata.hardware_model,
-    #     'image_ids': ids
-    # }
+
+    # insert the image objects into the database
+    image_manager.upload_images(images)
 
 
-def fetch_flights(calling_user_id, flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model):
+def fetch_flights(calling_user_id, flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name,
+                  start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make,
+                  model):
     """
     Fetches flights from the database based
     on the user's passed values.
@@ -173,15 +172,15 @@ def fetch_flights(calling_user_id, flight_ids, user_ids, flight_name, manual_not
     crop_name : string
         The optional crop_name
         NOTE: Uses a LIKE comparision, full crop_name is not necessary, case IN-sensitive
-    start_datetime_range : objects.range
+    start_datetime_range : range
         The optional range of datetimes for the start of the flight
-    end_datetime_range : objects.range
+    end_datetime_range : range
         The optional range of datetimes for the end of the flight
-    latitude_range : objects.range
+    latitude_range : range
         The optional range of latitudes
-    longitude_range : objects.range
+    longitude_range : range
         The optional range of longitudes
-    altitude_range : objects.range
+    altitude_range : range
         The optional range of altitudes
     make : string
         The optional hardware make
@@ -195,16 +194,24 @@ def fetch_flights(calling_user_id, flight_ids, user_ids, flight_name, manual_not
     flights : set(flights)
         returns a set of flights
     """
-    rs = flight_dao.select_flights('*', flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name, start_datetime_range, end_datetime_range, latitude_range, longitude_range, altitude_range, make, model)
+    # fetch the flights result
+    rs = flight_dao.select_flights('*', flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name,
+                                   start_datetime_range, end_datetime_range, latitude_range, longitude_range,
+                                   altitude_range, make, model)
+    # convert the database result to flight objects
     flights = flights_rs_to_object_list(rs)
+    # create an empty set to add flights to remove to
     flights_to_remove = set()
     for flight in flights:
+        # if the flight is private, and the calling user is not the owner, add the flight to the remove set
         if flight.privacy == privacy_enum.Private and flight.user_id != int(calling_user_id):
             flights_to_remove.add(flight)
+        # if the flight is shared, and the calling user is not shared on the flight, add the flight to the remove set
         elif flight.privacy == privacy_enum.Shared and flight.user_id != int(calling_user_id):
             shared_user_ids = shared_flight_manager.fetch_shared_flight_user_ids(flight.id)
             if int(str(calling_user_id)) not in shared_user_ids:
                 flights_to_remove.add(flight)
+    # return the set of original flights without the disallowed flights.
     return set(flights).difference(flights_to_remove)
 
 
@@ -219,7 +226,8 @@ def remove_flight(flight_id):
     flight_id : int
         The id of the flight to remove
     """
-    flight_to_delete = flight_dao.select_flights('id', [flight_id], None, None, None, None, None, None, None, None, None, None, None, None, None)
+    flight_to_delete = flight_dao.select_flights('id', [flight_id], None, None, None, None, None, None, None, None,
+                                                 None, None, None, None, None)
     flight_id_to_delete = None if len(flight_to_delete) == 0 else flight_to_delete[0][0]
     flight_dao.delete_flight(flight_id_to_delete)
 
@@ -240,7 +248,10 @@ def flight_data_to_tuple(flight):
     """
     tuple_flights = []
     for f in flight:
-        tuple_flights.append((f.id, f.user_id, f.flight_name, f.manual_notes, f.address, f.field_name, f.crop_name, str(f.average_latitude), str(f.average_longitude), str(f.average_altitude), str(f.flight_start_time), str(f.flight_end_time), f.hardware_make, f.hardware_model, str(f.privacy)))
+        tuple_flights.append((f.id, f.user_id, f.flight_name, f.manual_notes, f.address, f.field_name, f.crop_name,
+                              str(f.average_latitude), str(f.average_longitude), str(f.average_altitude),
+                              str(f.flight_start_time), str(f.flight_end_time), f.hardware_make, f.hardware_model,
+                              str(f.privacy)))
     return tuple_flights
 
 
@@ -264,7 +275,7 @@ def flight_address(latitude, longitude):
     address = None
     if latitude is not None and longitude is not None:
         address_coordinates = "{}, {}".format(latitude, longitude)
-        geo_locator = Nominatim(user_agent = "CSAIA")
+        geo_locator = Nominatim(user_agent="CSAIA")
         location = geo_locator.reverse(address_coordinates)
         address = location.address
     return address
@@ -283,7 +294,7 @@ def flight_data_to_csv(file_name, flights):
 
     """
     flights_to_insert = flight_data_to_tuple(flights)
-    with open('flight_csv_files/{}.csv'.format(file_name),'w', newline='') as out:
+    with open('flight_csv_files/{}.csv'.format(file_name), 'w', newline='') as out:
         csv_out = csv.writer(out)
         csv_out.writerow([
             'id',
