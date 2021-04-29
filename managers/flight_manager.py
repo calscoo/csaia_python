@@ -1,7 +1,7 @@
 import csv
 from geopy.geocoders import Nominatim
-from daos import flight_dao
-from managers import image_manager, shared_flight_manager
+from daos import flight_dao, shared_flight_dao
+from managers import image_manager, shared_flight_manager, users_manager
 from objects.flight import flight
 from objects.flight_derived_metadata import flight_derived_metadata
 from enums.privacy import privacy as privacy_enum
@@ -116,6 +116,14 @@ def build_flight(owner_id, path, flight_name, manual_notes, field_name, crop_nam
     flight_metadata = calculate_derived_flight_metadata(images)
     # calculate the common address
     address = flight_address(flight_metadata.average_latitude, flight_metadata.average_longitude)
+
+    # remove the owner_id from the shared users and fetch the shared_users
+    if owner_id in shared_users:
+        shared_users.remove(owner_id)
+    valid_shared_users = users_manager.fetch_users(shared_users, None, None, None)
+    if privacy == privacy_enum.Shared and len(valid_shared_users) == 0:
+        privacy = privacy_enum.Public
+
     # prepare the flight record for database insert
     flight_records = [(owner_id, flight_name, manual_notes, address, field_name,
                        crop_name, flight_metadata.average_latitude, flight_metadata.average_longitude,
@@ -129,8 +137,6 @@ def build_flight(owner_id, path, flight_name, manual_notes, field_name, crop_nam
 
     # if the flight is shared, insert the shared records
     if privacy == privacy_enum.Shared:
-        if owner_id in shared_users:
-            shared_users.remove(owner_id)
         shared_flight_manager.share_flight(flight_id, shared_users)
 
     # set the flight and owner id on the image objects
@@ -229,6 +235,7 @@ def remove_flight(flight_id):
     flight_to_delete = flight_dao.select_flights('id', [flight_id], None, None, None, None, None, None, None, None,
                                                  None, None, None, None, None)
     flight_id_to_delete = None if len(flight_to_delete) == 0 else flight_to_delete[0][0]
+    shared_flight_dao.delete_shared_flight(flight_id_to_delete)
     flight_dao.delete_flight(flight_id_to_delete)
 
 

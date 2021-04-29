@@ -161,7 +161,7 @@ def upload_images(images):
     return image_dao.insert_images(images_to_insert)
 
 
-def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash):
+def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash, include_flights):
     """
     Fetches image metadata from the database based
     on the user's passed values.
@@ -186,7 +186,7 @@ def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_loc
         The range from where the flight started and from where it ended latitudinally
     longitude_range : range
         The range from where the flight started and from where it ended longitudinally
-    altidute_range : range
+    altitude_range : range
         The range from how high the images were taken
     make : string
         The make of the drone/camera
@@ -194,6 +194,8 @@ def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_loc
         The model of the drone/camera
     md5_hash : string
         The hashing code of the image
+    include_flights : bool
+        Whether to also return flight objects or not
 
     Returns
     -------
@@ -230,7 +232,10 @@ def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_loc
             # except:
             #     raise AssertionError('MD5 Hash Does Not Match. Possible File Corruption.')
             return_images.append(image)
-    return return_images
+    if include_flights:
+        return return_images, allowed_flights
+    else:
+        return return_images
 
 
 def remove_images(image_ids, admin_id, admin_pass):

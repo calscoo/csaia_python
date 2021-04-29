@@ -1,8 +1,4 @@
-
-
-#Update Admin method still a work in progress
 from daos import shared_flight_dao
-from managers import users_manager
 
 
 def share_flight(flight_id, user_ids):
@@ -17,10 +13,9 @@ def share_flight(flight_id, user_ids):
     user_ids : list[int]
         The ids of the users
     """
-    valid_users = users_manager.fetch_users(user_ids, None, None, None)
     tuple_shared_flights = []
-    for user in valid_users:
-        tuple_shared_flights.append((user.id, flight_id))
+    for user_id in user_ids:
+        tuple_shared_flights.append((user_id, flight_id))
     shared_flight_dao.insert_shared_flights(tuple_shared_flights)
 
 
