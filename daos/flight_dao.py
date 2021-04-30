@@ -69,9 +69,9 @@ def select_flights(select_columns, flight_ids, user_ids, flight_name, manual_not
     """
     flights = Table('flights')
     select_flights_query = Query.from_(flights).select('*' if select_columns is None else select_columns)
-    if flight_ids is not None and len(flight_ids) > 0:
+    if flight_ids is not None:
         select_flights_query = select_flights_query.where(flights.id.isin(flight_ids))
-    if user_ids is not None and len(user_ids) > 0:
+    if user_ids is not None:
         select_flights_query = select_flights_query.where(flights.user_id.isin(user_ids))
     if flight_name is not None:
         select_flights_query = select_flights_query.where(flights.flight_name.like('%' + flight_name + '%'))
