@@ -2,6 +2,7 @@ from daos import users_dao
 from enums.role import roles
 from managers.tools import password_manager
 
+
 #Create user method
 from objects.user import user
 
@@ -170,9 +171,12 @@ def verify_api_key(api_key):
     if api_key == 'vsRV7QBUP3EQGaD4wPbMjzUC2':
         return True
 
-    ids = users_dao.select_users('id', None, None, None, None, None, api_key)
-
-    return len(ids) > 0
+    user_roles = users_dao.select_users('role', None, None, None, None, None, api_key)[0]
+    for role in user_roles:
+        user_proper_role = roles(int(role))
+        if user_proper_role == roles.Admin or user_proper_role == roles.Basic:
+            return True
+    return False
 
 
 def fetch_user_api_key(id, password):
