@@ -23,6 +23,7 @@ def select_images(select_columns, image_ids, user_ids, flight_ids, directory_loc
     General purpose image selection method built to cover a broad demand of queries.
     Every parameter can be None and list values can accept any number of elements including 0.
     This was built to flesh out image selections in the manager without having to write complex queries.
+    NOTE. If all the parameters are empty this will return nothing
 
     Parameters
     ----------
@@ -64,31 +65,47 @@ def select_images(select_columns, image_ids, user_ids, flight_ids, directory_loc
     """
     images = Table('images')
     select_image_query = Query.from_(images).select('*' if select_columns is None else select_columns)
+    added = False
     if image_ids is not None:
+        added = True
         select_image_query = select_image_query.where(images.id.isin(image_ids))
     if user_ids is not None:
+        added = True
         select_image_query = select_image_query.where(images.user_id.isin(user_ids))
     if flight_ids is not None:
+        added = True
         select_image_query = select_image_query.where(images.flight_id.isin(flight_ids))
     if directory_location is not None:
+        added = True
         select_image_query = select_image_query.where(images.directory_location.isin([directory_location]))
     if extensions is not None:
+        added = True
         select_image_query = select_image_query.where(images.image_extension.isin(extensions))
     if datetime_range is not None:
+        added = True
         select_image_query = select_image_query.where(images.datetime >= datetime_range.begin).where(images.datetime <= datetime_range.end)
     if latitude_range is not None:
+        added = True
         select_image_query = select_image_query.where(images.latitude >= latitude_range.begin).where(images.latitude <= latitude_range.end)
     if longitude_range is not None:
+        added = True
         select_image_query = select_image_query.where(images.longitude >= longitude_range.begin).where(images.longitude <= longitude_range.end)
     if altitude_range is not None:
+        added = True
         select_image_query = select_image_query.where(images.altitude >= altitude_range.begin).where(images.altitude <= altitude_range.end)
     if make is not None:
+        added = True
         select_image_query = select_image_query.where(images.hardware_make.like('%' + make + '%'))
     if model is not None:
+        added = True
         select_image_query = select_image_query.where(images.hardware_model.like('%' + model + '%'))
     if md5_hash is not None:
+        added = True
         select_image_query = select_image_query.where(images.md5_hash.isin([md5_hash]))
-    return dao_tools.execute(select_image_query)
+    if added:
+        return dao_tools.execute(select_image_query)
+    else:
+        return []
 
 
 def select_all_images(select_columns):

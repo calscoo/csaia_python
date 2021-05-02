@@ -61,8 +61,8 @@ flight_manager.flight_address(1234, 5678)
 # inserts image objects into the database
 image_manager.upload_images([image()])
 
-# Fetch image objects via a number of optional params
-image_manager.fetch_images(1, [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], "/image/file/path", [".jpg", ".tif"], Range(1234, 5678), Range(1234, 5678), Range(1234, 5678), Range(1234, 5678), "make", "model", "hash", False)
+# Fetch image and flight objects via a number of optional params
+image_manager.fetch_images_and_flights(1, [1, 2, 3, 4], [1, 2, 3, 4], [1, 2, 3, 4], "/image/file/path", [".jpg", ".tif"], Range(1234, 5678), Range(1234, 5678), Range(1234, 5678), Range(1234, 5678), "make", "model", "hash", None, None, None, None, None)
 
 # Remove images
 image_manager.remove_images([1, 2, 3, 4, 5], 1, "admin_pass")

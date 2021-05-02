@@ -1,10 +1,13 @@
 import csv
+
 from geopy.geocoders import Nominatim
 from daos import flight_dao, shared_flight_dao
 from managers import image_manager, shared_flight_manager, users_manager
 from objects.flight import flight
 from objects.flight_derived_metadata import flight_derived_metadata
 from enums.privacy import privacy as privacy_enum
+import os.path as Path
+import shutil
 
 
 def calculate_derived_flight_metadata(images):
@@ -112,40 +115,48 @@ def build_flight(owner_id, path, flight_name, manual_notes, field_name, crop_nam
     """
     # parse the image metadata into images objects
     images = image_manager.parse_image_metadata(path)
-    # parse the flight metadata into flight metadata objects
-    flight_metadata = calculate_derived_flight_metadata(images)
-    # calculate the common address
-    address = flight_address(flight_metadata.average_latitude, flight_metadata.average_longitude)
+    if len(images) > 0:
+        # parse the flight metadata into flight metadata objects
+        flight_metadata = calculate_derived_flight_metadata(images)
+        # calculate the common address
+        address = flight_address(flight_metadata.average_latitude, flight_metadata.average_longitude)
 
-    # remove the owner_id from the shared users and fetch the shared_users
-    if owner_id in shared_users:
-        shared_users.remove(owner_id)
-    valid_shared_users = users_manager.fetch_users(shared_users, None, None, None)
-    if privacy == privacy_enum.Shared and len(valid_shared_users) == 0:
-        privacy = privacy_enum.Public
+        # remove the owner_id from the shared users and fetch the shared_users
+        # if owner_id in shared_users:
+        #     shared_users.remove(owner_id)
+        # valid_shared_users = users_manager.fetch_users(shared_users, None, None, None)
+        shareable_ids = users_manager.fetch_shareable_user_ids(owner_id, shared_users)
+        if privacy == privacy_enum.Shared and len(shareable_ids) == 0:
+            privacy = privacy_enum.Private
 
-    # prepare the flight record for database insert
-    flight_records = [(owner_id, flight_name, manual_notes, address, field_name,
-                       crop_name, flight_metadata.average_latitude, flight_metadata.average_longitude,
-                       flight_metadata.average_altitude,
-                       flight_metadata.flight_start_time, flight_metadata.flight_end_time,
-                       flight_metadata.hardware_make,
-                       flight_metadata.hardware_model, privacy.value)]
+        # prepare the flight record for database insert
+        flight_records = [(owner_id, flight_name, manual_notes, address, field_name,
+                           crop_name, flight_metadata.average_latitude, flight_metadata.average_longitude,
+                           flight_metadata.average_altitude,
+                           flight_metadata.flight_start_time, flight_metadata.flight_end_time,
+                           flight_metadata.hardware_make,
+                           flight_metadata.hardware_model, privacy.value)]
 
-    # insert the flight record into the database
-    flight_id = flight_dao.insert_flights(flight_records)[0]
+        # insert the flight record into the database
+        flight_id = flight_dao.insert_flights(flight_records)[0]
 
-    # if the flight is shared, insert the shared records
-    if privacy == privacy_enum.Shared:
-        shared_flight_manager.share_flight(flight_id, shared_users)
+        # if the flight is shared, insert the shared records
+        if privacy == privacy_enum.Shared:
+            shared_flight_manager.share_flight(flight_id, shareable_ids)
 
-    # set the flight and owner id on the image objects
-    for image in images:
-        image.flight_id = flight_id
-        image.user_id = owner_id
+        # set the flight and owner id on the image objects
+        for image in images:
+            image.flight_id = flight_id
+            image.user_id = owner_id
 
-    # insert the image objects into the database
-    image_manager.upload_images(images)
+        # insert the image objects into the database
+        image_manager.upload_images(images)
+        return True
+    else:
+        # No images to build flight from, delete the upload
+        if Path.exists(path):
+            shutil.rmtree(path)
+        return False
 
 
 def fetch_flights(calling_user_id, flight_ids, user_ids, flight_name, manual_notes, address, field_name, crop_name,

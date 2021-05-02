@@ -51,7 +51,7 @@ def query_image():
         return jsonify(success=False)
 
     image_ids = request.args.get('image_ids')
-    if (image_ids == 'null'):
+    if image_ids == 'null':
         image_ids = None
     else:
         image_ids = str(image_ids).split(',')
@@ -60,7 +60,7 @@ def query_image():
             image_ids[i] = int(image_ids[i])
 
     user_ids = request.args.get('user_ids')
-    if (user_ids == 'null'):
+    if user_ids == 'null':
         user_ids = None
     else:
         user_ids = str(user_ids).split(',')
@@ -69,7 +69,7 @@ def query_image():
             user_ids[i] = int(user_ids[i])
 
     flight_ids = request.args.get('flight_ids')
-    if (flight_ids == 'null'):
+    if flight_ids == 'null':
         flight_ids = None
     else:
         flight_ids = str(flight_ids).split(',')
@@ -78,57 +78,77 @@ def query_image():
             flight_ids[i] = int(flight_ids[i])
 
     extensions = request.args.get('extensions')
-    if (extensions == 'null'):
+    if extensions == 'null':
         extensions = None
     else:
         extensions = str(extensions).split(',')
 
     datetime_range = request.args.get('datetime_range')
-    if (datetime_range == 'null'):
+    if datetime_range == 'null':
         datetime_range = None
     else:
         times = str(datetime_range).split(',')
         datetime_range = Range(times[0], times[1])
 
     latitude_range = request.args.get('latitude_range')
-    if (latitude_range == 'null'):
+    if latitude_range == 'null':
         latitude_range = None
     else:
         lats = str(latitude_range).split(',')
         latitude_range = Range(lats[0], lats[1])
 
     longitude_range = request.args.get('longitude_range')
-    if (longitude_range == 'null'):
+    if longitude_range == 'null':
         longitude_range = None
     else:
         longs = str(longitude_range).split(',')
         longitude_range = Range(longs[0], longs[1])
 
     altitude_range = request.args.get('altitude_range')
-    if (altitude_range == 'null'):
+    if altitude_range == 'null':
         altitude_range = None
     else:
         alts = str(altitude_range).split(',')
         altitude_range = Range(alts[0], alts[1])
 
     make = request.args.get('make')
-    if (make == 'null'):
+    if make == 'null':
         make = None
 
     model = request.args.get('model')
-    if (model == 'null'):
+    if model == 'null':
         model = None
 
+    flight_name = request.args.get('flight_name')
+    if flight_name == 'null':
+        flight_name = None
+
+    flight_notes = request.args.get('flight_notes')
+    if flight_notes == 'null':
+        flight_notes = None
+
+    flight_field = request.args.get('flight_field')
+    if flight_field == 'null':
+        flight_field = None
+
+    flight_crop = request.args.get('flight_crop')
+    if flight_crop == 'null':
+        flight_crop = None
+
+    flight_address = request.args.get('flight_address')
+    if flight_address == 'null':
+        flight_address = None
+
     shared = request.args.get('shared')
-    if (shared == 'null'):
+    if shared == 'null':
         shared = None
     else:
         shared = int(shared)
 
-    if (shared == 1):
+    if shared == 1:
         flight_ids = shared_flight_manager.fetch_users_shared_flight_ids(calling_user_id)
 
-    images, flights = managers.image_manager.fetch_images(calling_user_id, image_ids, user_ids, flight_ids, None, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, None, True)
+    images, flights = managers.image_manager.fetch_images_and_flights(calling_user_id, image_ids, user_ids, flight_ids, None, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, None, flight_name, flight_notes, flight_field, flight_crop, flight_address)
 
     return_object = {
         'images': [],
@@ -156,7 +176,8 @@ def query_image():
             'address': flight.address,
             'field_name': flight.field_name,
             'crop_name': flight.crop_name,
-            'flight_date_time': flight.flight_start_time
+            'flight_date_time': flight.flight_start_time,
+            'privacy': flight.privacy.value
         })
 
     return jsonify(return_object)
@@ -313,13 +334,13 @@ def get_users_flights():
     if not managers.users_manager.verify_api_key(api_key):
         return jsonify(success=False)
 
-    results = managers.image_manager.fetch_images(calling_user_id, None, [calling_user_id], None, None, None, None, None, None, None, None, None, None, False)
+    images, flights = managers.image_manager.fetch_images_and_flights(calling_user_id, None, [calling_user_id], None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
 
     return_object = {
         'objects': []
     }
 
-    for image in results:
+    for image in images:
         return_object['objects'].append({
             'id': image.id,
             'user_id': image.user_id,
@@ -348,7 +369,7 @@ def get_users_shared_flights():
 
     calling_user_id = request.args.get('calling_user_id')
     flight_ids = shared_flight_manager.fetch_users_shared_flight_ids(calling_user_id)
-    images = image_manager.fetch_images(calling_user_id, None, None, flight_ids, None, None, None, None, None, None, None, None, None, False)
+    images, flights = image_manager.fetch_images_and_flights(calling_user_id, None, None, flight_ids, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
 
     return_object = {
         'objects': []
@@ -525,21 +546,21 @@ def prepare_zip():
         for i in range(0, len(image_ids)): 
             image_ids[i] = int(image_ids[i])
 
-    results = managers.image_manager.fetch_images(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None, None, None, False)
+    images, flights = managers.image_manager.fetch_images_and_flights(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
 
     # check if at least one image exists before making a directory
     at_least_one = False
-    for image in results:
+    for image in images:
         if os.path.exists(image.directory_location):
             at_least_one = True
 
     # return 0 if there aren't any results
-    if len(results) == 0:
+    if len(images) == 0:
         return_object = {
             'result': 0
         }
     # return 50 if there's more than 50 results
-    elif len(results) > 50:
+    elif len(images) > 50:
         return_object = {
             'result': 50
         }
@@ -552,7 +573,7 @@ def prepare_zip():
         os.makedirs(directory_name)
 
         # add image results to file
-        for image in results:
+        for image in images:
             name = os.path.basename(image.directory_location)
             if os.path.exists(image.directory_location):
                 copyfile(image.directory_location, os.path.join(directory_name, name))
@@ -605,16 +626,16 @@ def prepare_image_csv():
 
     image_ids = request.args.get('image_ids')
     calling_user_id = request.args.get('calling_user_id')
-    if (image_ids == 'null'):
+    if image_ids == 'null':
         image_ids = None
     else:
         image_ids = str(image_ids).split(',')
         for i in range(0, len(image_ids)): 
             image_ids[i] = int(image_ids[i])
-    results = managers.image_manager.fetch_images(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None, None, None, False)
+    images, flights = managers.image_manager.fetch_images_and_flights(calling_user_id, image_ids, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None)
 
     # handle edge cases
-    if (len(results) == 0):
+    if len(images) == 0:
         return jsonify(count=0)
 
     # make a new temp folder for the csv file
@@ -622,7 +643,7 @@ def prepare_image_csv():
     directory_name = 'image_csv_files/image_' + cur_time
     file_name = 'image_' + cur_time
     csv_name = directory_name + '.csv'
-    managers.image_manager.image_data_to_csv(file_name, results)
+    managers.image_manager.image_data_to_csv(file_name, images)
 
     # send csv over to user
     # return send_file(zip_name, as_attachment=True)
@@ -725,14 +746,8 @@ def upload_file():
         return jsonify(success=False)
 
     if request.method == 'POST':
-        owner_id = request.form['owner_id']
-        
-        cur_time = datetime.now().strftime(time_format)
-        directory_name = os.path.join('uploaded', (owner_id + '_' + cur_time))
-        os.makedirs(directory_name)
-
         # get flight-based request args
-        
+        owner_id = request.form['owner_id']
         flight_name = request.form['flight_name']
         notes = request.form['notes']
         field_name = request.form['field_name']
@@ -741,15 +756,22 @@ def upload_file():
         shared_users = request.form['shared_users']
         shared_users = str(shared_users).split(',')
 
+        if flight_name == '' or notes == '' or field_name == '' or crop == '':
+            return jsonify(success=False)
+
+        cur_time = datetime.now().strftime(time_format)
+        directory_name = os.path.join('uploaded', (owner_id + '_' + cur_time))
+        os.makedirs(directory_name)
+
         # request.files contains all the files attached to the request
         for file in request.files.getlist('image'):
             path = os.path.join(directory_name, file.filename)
             file.save(path)
 
         # build flight
-        managers.flight_manager.build_flight(owner_id, os.path.abspath(directory_name), flight_name, notes, field_name, crop, privacy_enum(int(privacy_value)), shared_users)
+        result = managers.flight_manager.build_flight(owner_id, os.path.abspath(directory_name), flight_name, notes, field_name, crop, privacy_enum(int(privacy_value)), shared_users)
 
-        return jsonify(success=True)
+        return jsonify(success=result)
 
 def clean_zipped():
     """

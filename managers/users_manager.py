@@ -250,6 +250,31 @@ def check_force_password_reset(user_id):
         return int(str(users_dao.select_users('force_reset', [user_id], None, None, None, None, None)[0][0]))
 
 
+def fetch_shareable_user_ids(sharing_id, share_ids):
+    """
+    Fetch the valid user ids to share a flight with
+    The sharing user, disabled users and non-existent users will be filtered out.
+
+    Parameters
+    ----------
+    sharing_id : integer
+        The user id that is sharing the flight
+    share_ids : list[int]
+        The user ids that the flight will be shared with
+
+    Returns
+    -------
+    List of valid ids to share the flight with
+    """
+    sharable_ids = []
+    potential_sharable_users = users_rs_to_object_list(users_dao.select_users('*', share_ids, None, None, None, None, None))
+    for user in potential_sharable_users:
+        if not (user.role == roles.Disabled or str(user.id) == str(sharing_id)):
+            sharable_ids.append(user.id)
+
+    return sharable_ids
+
+
 def fetch_users(ids, email, password, role):
     """
     Fetch all users based on the passed values

@@ -1,18 +1,23 @@
 import hashlib
 import os
 import re
+import shutil
+from os import path
 
 import exifread
 import csv
 
+from datetime import datetime
+
 from managers import flight_manager, users_manager
 from managers.tools import password_manager
 from objects.image import image
-from daos import image_dao
+from daos import image_dao, flight_dao
 from GPSPhoto import gpsphoto
 
 # the system only allows for jpeg and tiff images
 supported_formats = ('.jpg', '.jpeg', '.tif', '.tiff')
+time_format = '%Y%m%d-%H%M%S'
 
 
 def none_check_str(val):
@@ -161,9 +166,9 @@ def upload_images(images):
     return image_dao.insert_images(images_to_insert)
 
 
-def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash, include_flights):
+def fetch_images_and_flights(calling_user_id, image_ids, user_ids, flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash, flight_name, flight_notes, flight_field, flight_crop, flight_address):
     """
-    Fetches image metadata from the database based
+    Fetches image and flight metadata from the database based
     on the user's passed values.
 
     Parameters
@@ -194,32 +199,58 @@ def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_loc
         The model of the drone/camera
     md5_hash : string
         The hashing code of the image
-    include_flights : bool
-        Whether to also return flight objects or not
+    flight_name : str
+        The optional flight_name
+    flight_notes : str
+        The optional flight_notes
+    flight_field : str
+        The optional flight_field
+    flight_crop : str
+        The optional flight_crop
+    flight_address : str
+        The optional flight_address
 
     Returns
     -------
     images : list of objects.image
         a list of images
+    flights : list of objects.flight
+        a list of flights
     """
+    # Whether or not to query flights as well
+    query_flights = flight_name is not None or flight_notes is not None or flight_field is not None or flight_crop is not None or flight_address is not None
+    # Fetch the queried flights
+    updated_flight_ids = [] if flight_ids is None else flight_ids
+    if query_flights:
+        query_flight_ids = []
+        flights = flight_manager.fetch_flights(str(calling_user_id), None, None, flight_name, flight_notes, flight_address, flight_field, flight_crop, None, None, None, None, None, None, None)
+        for flight in flights:
+            query_flight_ids.append(flight.id)
+            updated_flight_ids = updated_flight_ids + query_flight_ids
+    if len(updated_flight_ids) == 0:
+        updated_flight_ids = None
     # fetch the images result from the database
-    rs = image_dao.select_images('*', image_ids, user_ids, flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash)
+    images_rs = image_dao.select_images('*', image_ids, user_ids, updated_flight_ids, directory_location, extensions, datetime_range, latitude_range, longitude_range, altitude_range, make, model, md5_hash)
     # cast the database result to image objects
-    images = images_rs_to_object_list(rs)
+    images = images_rs_to_object_list(images_rs)
     # create an emtpy set of requested flight ids to access
     requested_flight_ids = set()
-    # add all flight ids from the requested images to the requested flight ids set
+    # add all flight ids from the requested images and requested flights to the requested flight ids set
     for image in images:
         requested_flight_ids.add(image.flight_id)
+    if query_flights:
+        requested_flight_ids.update(query_flight_ids)
     # fetch the allowed flights, passing in the calling user id ensures we only got back flights the user is permitted to view
-    allowed_flights = flight_manager.fetch_flights(calling_user_id, list(requested_flight_ids), None, None, None, None, None, None, None, None, None, None, None, None, None)
+    # This second flight fetch with the requested images flight ids is necessary because we need to filter out the disallowed flights from the image query
+    allowed_flights = flight_manager.fetch_flights(str(calling_user_id), list(requested_flight_ids), None, None, None, None, None, None, None, None, None, None, None, None, None)
     # create an emtpy set of allowed flight ids
-    allowed_flight_ids = set()
+    allowed_flight_ids = []
     # added the allowed flight ids to the allowed flight ids set
     for allowed_flight in allowed_flights:
-        allowed_flight_ids.add(allowed_flight.id)
+        allowed_flight_ids.append(allowed_flight.id)
     # iterate through the requested images and only return those with permitted flights
     return_images = []
+    return_image_flight_ids = set()
     for image in images:
         if image.flight_id in allowed_flight_ids:
             ### TODO:
@@ -231,11 +262,16 @@ def fetch_images(calling_user_id, image_ids, user_ids, flight_ids, directory_loc
             #     assert actual_hash == image.md5_hash
             # except:
             #     raise AssertionError('MD5 Hash Does Not Match. Possible File Corruption.')
+            return_image_flight_ids.add(image.flight_id)
             return_images.append(image)
-    if include_flights:
-        return return_images, allowed_flights
+    return_flights = []
+    for flight in allowed_flights:
+        if flight.id in return_image_flight_ids:
+            return_flights.append(flight)
+    if query_flights:
+        return return_images, return_flights
     else:
-        return return_images
+        return return_images, allowed_flights
 
 
 def remove_images(image_ids, admin_id, admin_pass):
@@ -243,6 +279,7 @@ def remove_images(image_ids, admin_id, admin_pass):
     Removes all the images containing the passed ids
     NOTE: This will also remove the images flight if the image deletion leaves a flight without images
     NOTE: Checks if the images exist before deletion
+    NOTE: Deleted images are moved to the archive folder
 
     Parameters
     ----------
@@ -254,17 +291,25 @@ def remove_images(image_ids, admin_id, admin_pass):
     admin_user = users_manager.fetch_users([admin_id], None, None, None)[0]
     if password_manager.check_password(admin_pass, admin_user.password):
         flight_ids = set()
-        image_ids_to_delete = set()
-        images_to_delete = image_dao.select_images('id, flight_id', image_ids, None, None, None, None, None, None, None, None, None, None, None)
+        image_ids_to_delete = []
+        images_to_delete = image_dao.select_images('id, flight_id, directory_location', image_ids, None, None, None, None, None, None, None, None, None, None, None)
         if images_to_delete is not None and len(images_to_delete) > 0:
             for image in images_to_delete:
                 flight_ids.add(image[1])
-                image_ids_to_delete.add(image[0])
-            image_dao.delete_images(list(image_ids_to_delete))
+                image_ids_to_delete.append(image[0])
+                file_path = image[2]
+                parent_path = os.path.join(*os.path.split(file_path)[:-1])
+                archive_directory_name = os.path.join('archive', os.path.split(parent_path)[-1])
+                if not path.exists(archive_directory_name):
+                    os.makedirs(archive_directory_name)
+                if path.exists(file_path):
+                    shutil.move(file_path, archive_directory_name)
+                    if len(os.listdir(parent_path)) == 0:
+                        shutil.rmtree(parent_path)
+            image_dao.delete_images(image_ids_to_delete)
             for flight_id in flight_ids:
                 if flight_id is not None:
-                    flight_remaining_images = \
-                    image_dao.select_images('count(*)', None, None, [flight_id], None, None, None, None, None, None, None, None, None)[0][0]
+                    flight_remaining_images = image_dao.select_images('count(*)', None, None, [flight_id], None, None, None, None, None, None, None, None, None)[0][0]
                     if flight_remaining_images == 0:
                         flight_manager.remove_flight(flight_id)
             return True
