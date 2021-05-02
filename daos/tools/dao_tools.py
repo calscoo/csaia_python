@@ -26,11 +26,11 @@ def execute(query, *args):
     try:
         with connect(
                 host="localhost",
-                # user="csaia",
-                # password="hHTa96vh#54&ijzi5*A%a!QHJ",
+                user="csaia",
+                password="hHTa96vh#54&ijzi5*A%a!QHJ",
                 # Local dev settings
-                user="root",
-                password="Password1234",
+                # user="root",
+                # password="Password1234",
                 database="csaia_database",
         ) as connection:
             ids = []
