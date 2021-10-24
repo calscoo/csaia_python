@@ -1,2 +1,2 @@
 # csaia_python
-Python - The backend for the Citizen Science Ariel Image Aggregation (CSAIA).
+Python - The backend for the Citizen Science Ariel Image Aggregation (CSAIA) application.
